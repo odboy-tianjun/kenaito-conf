@@ -1,0 +1,108 @@
+<template>
+  <el-card>
+    <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
+      <span>业务组管理</span>
+      <el-button type="primary" @click="showAdd">新建业务组</el-button>
+    </div>
+    <el-table :data="list" v-loading="loading" border stripe>
+      <el-table-column prop="id" label="ID" width="60"></el-table-column>
+      <el-table-column prop="name" label="组名称"></el-table-column>
+      <el-table-column prop="master" label="负责人"></el-table-column>
+      <el-table-column prop="remarks" label="备注"></el-table-column>
+      <el-table-column prop="enabled" label="状态" width="80">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.enabled ? 'success' : 'info'">{{ scope.row.enabled ? '启用' : '禁用' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="100">
+        <template slot-scope="scope">
+          <el-button type="text" @click="showEdit(scope.row)">编辑</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
+      <el-form :model="form" :rules="rules" ref="form" label-width="80px">
+        <el-form-item label="组名称" prop="name">
+          <el-input v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item label="负责人" prop="masterUid">
+          <el-select v-model="form.masterUid" placeholder="请选择">
+            <el-option v-for="u in users" :key="u.value" :label="u.label" :value="parseInt(u.value)"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="form.remarks" type="textarea"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </span>
+    </el-dialog>
+  </el-card>
+</template>
+
+<script>
+import request from '../../api/request'
+
+export default {
+  data() {
+    return {
+      list: [],
+      loading: false,
+      dialogVisible: false,
+      dialogTitle: '',
+      form: {},
+      rules: {
+        name: [{ required: true, message: '请输入组名称', trigger: 'blur' }],
+        masterUid: [{ required: true, message: '请选择负责人', trigger: 'change' }]
+      },
+      users: []
+    }
+  },
+  created() {
+    this.loadData()
+    this.loadUsers()
+  },
+  methods: {
+    async loadData() {
+      this.loading = true
+      try {
+        const res = await request({ url: '/admin/group/list', method: 'get' })
+        this.list = res.data || []
+      } finally {
+        this.loading = false
+      }
+    },
+    async loadUsers() {
+      try {
+        const res = await request({ url: '/admin/user/options', method: 'get' })
+        this.users = res.data || []
+      } catch (e) {}
+    },
+    showAdd() {
+      this.dialogTitle = '新建业务组'
+      this.form = { name: '', masterUid: null, remarks: '' }
+      this.dialogVisible = true
+    },
+    showEdit(row) {
+      this.dialogTitle = '编辑业务组'
+      this.form = { ...row }
+      this.dialogVisible = true
+    },
+    handleSubmit() {
+      this.$refs.form.validate(async (valid) => {
+        if (!valid) return
+        try {
+          const url = this.form.id ? '/admin/group/update' : '/admin/group/add'
+          await request({ url, method: 'post', data: this.form })
+          this.$message.success('保存成功')
+          this.dialogVisible = false
+          this.loadData()
+        } catch (e) {}
+      })
+    }
+  }
+}
+</script>

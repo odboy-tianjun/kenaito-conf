@@ -1,12 +1,12 @@
 <template>
   <el-container style="height: 100vh">
-    <el-aside width="200px" style="background: #304156">
-      <div class="logo">配置中心</div>
+    <el-aside width="200px" style="background: #1a237e">
+      <div class="logo">Kenaito配置中心</div>
       <el-menu
         :default-active="activeMenu"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
+        background-color="#1a237e"
+        text-color="rgba(255, 255, 255, 0.7)"
+        active-text-color="#fff"
         router
       >
         <template v-for="menu in menus">
@@ -28,7 +28,7 @@
     </el-aside>
     <el-container>
       <el-header style="background: #fff; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,21,41,.08)">
-        <span style="font-size: 16px; font-weight: bold">欢迎使用配置中心</span>
+        <span style="font-size: 16px; font-weight: bold">欢迎使用 Kenaito配置中心</span>
         <div>
           <span style="margin-right: 15px">{{ userInfo ? userInfo.name : '' }}</span>
           <el-button type="text" @click="handleLogout">退出</el-button>
@@ -91,9 +91,16 @@ export default {
   color: #fff;
   font-size: 18px;
   font-weight: bold;
-  background: #263445;
+  background: rgba(0, 0, 0, 0.2);
 }
 .el-menu {
   border-right: none;
+}
+.el-menu-item:hover,
+.el-submenu__title:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.el-menu-item.is-active {
+  background-color: rgba(255, 255, 255, 0.15) !important;
 }
 </style>

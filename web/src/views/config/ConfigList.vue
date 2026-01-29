@@ -39,17 +39,37 @@
       layout="total, prev, pager, next"
     ></el-pagination>
 
-    <el-dialog title="配置历史" :visible.sync="historyVisible" width="700px">
+    <el-dialog title="配置历史" :visible.sync="historyVisible" width="900px">
       <el-table :data="historyList" border stripe>
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
         <el-table-column prop="createdBy" label="操作人" width="100"></el-table-column>
-        <el-table-column prop="createdAt" label="操作时间" width="180"></el-table-column>
+        <el-table-column label="操作时间" width="180">
+          <template slot-scope="scope">
+            {{ formatTime(scope.row.createdAt) }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
+            <el-button type="text" @click="viewHistoryContent(scope.row)">查看内容</el-button>
             <el-button type="text" @click="handleRollback(scope.row)">回滚到此版本</el-button>
           </template>
         </el-table-column>
       </el-table>
+    </el-dialog>
+
+    <el-dialog title="历史版本内容" :visible.sync="contentVisible" width="800px" append-to-body>
+      <div style="margin-bottom: 10px">
+        <strong>配置名称：</strong>{{ currentHistory.name }} | 
+        <strong>版本：</strong>{{ currentHistory.version }} | 
+        <strong>类型：</strong>{{ getTypeName(currentHistory.type) }}
+      </div>
+      <el-input 
+        v-model="formattedContent" 
+        type="textarea" 
+        :rows="25" 
+        readonly
+        style="font-family: monospace"
+      ></el-input>
     </el-dialog>
   </el-card>
 </template>
@@ -68,7 +88,10 @@ export default {
       profiles: [],
       historyVisible: false,
       historyList: [],
-      currentConfig: null
+      currentConfig: null,
+      contentVisible: false,
+      currentHistory: {},
+      formattedContent: ''
     }
   },
   created() {
@@ -111,6 +134,32 @@ export default {
         this.historyList = res.data || []
         this.historyVisible = true
       } catch (e) {}
+    },
+    viewHistoryContent(row) {
+      this.currentHistory = row
+      const content = row.contents || ''
+      if (row.type === 3) {
+        try {
+          this.formattedContent = JSON.stringify(JSON.parse(content), null, 2)
+        } catch (e) {
+          this.formattedContent = content
+        }
+      } else {
+        this.formattedContent = content
+      }
+      this.contentVisible = true
+    },
+    getTypeName(type) {
+      if (type === 1) return '文件'
+      if (type === 2) return '配置项'
+      if (type === 3) return 'JSON'
+      return '未知'
+    },
+    formatTime(time) {
+      if (!time) return ''
+      const d = new Date(time)
+      const pad = n => String(n).padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
     },
     async handleRollback(row) {
       try {

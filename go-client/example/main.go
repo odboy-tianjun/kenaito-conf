@@ -13,8 +13,8 @@ func main() {
 	// create config
 	cfg := &client.Config{
 		BaseURL:      "http://localhost:8080",
-		AppName:      "myapp",
-		Env:          "dev",
+		AppName:      "kenaito-springboot-demo",
+		Env:          "daily",
 		Version:      "latest",
 		SyncInterval: 30, // sync every 30 seconds
 		CacheDir:     ".",
@@ -44,8 +44,8 @@ func main() {
 	}
 
 	// get specific config
-	dbHost := c.Get("db.host")
-	fmt.Printf("\ndb.host = %s\n", dbHost)
+	dbHost := c.Get("database.host")
+	fmt.Printf("\ndatabase.host = %s\n", dbHost)
 
 	// keep running until signal
 	fmt.Println("\nListening for config changes... (press Ctrl+C to stop)")

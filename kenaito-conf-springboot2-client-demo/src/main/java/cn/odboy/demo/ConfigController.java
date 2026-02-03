@@ -10,29 +10,29 @@ import java.util.Map;
 @RestController
 public class ConfigController {
 
-    @Value("${app.name:unknown}")
-    private String appName;
+    @Value("${database.host:unknown}")
+    private String host;
 
-    @Value("${app.version:unknown}")
-    private String appVersion;
+    @Value("${database.port:unknown}")
+    private String port;
 
-    @Value("${db.url:unknown}")
-    private String dbUrl;
+    @Value("${database.name:unknown}")
+    private String name;
 
-    @Value("${db.username:unknown}")
-    private String dbUsername;
+    @Value("${database.user:unknown}")
+    private String user;
 
-    @Value("${custom.config1:unknown}")
-    private String customConfig1;
+    @Value("${database.password:unknown}")
+    private String password;
 
     @GetMapping("/")
     public Map<String, Object> index() {
         Map<String, Object> result = new HashMap<>();
-        result.put("appName", appName);
-        result.put("appVersion", appVersion);
-        result.put("dbUrl", dbUrl);
-        result.put("dbUsername", dbUsername);
-        result.put("customConfig1", customConfig1);
+        result.put("host", host);
+        result.put("port", port);
+        result.put("name", name);
+        result.put("user", user);
+        result.put("password", password);
         return result;
     }
 

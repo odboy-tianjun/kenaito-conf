@@ -116,7 +116,7 @@ public class ConfigcenterContext {
 			throw new IllegalArgumentException("[kenaito.config.profile] is required");
 		}
 
-		setApiBaseUrl(getProperty("kenaito.config.baseUrl", getProperty("kenaito.config.base.url", "")));
+		setApiBaseUrl(getProperty("kenaito.config.baseUrl", getProperty("kenaito.config.baseUrl", "")));
 
 		version = getProperty("kenaito.config.version", "latest");
 		ignoreGlobal = Boolean.parseBoolean(getProperty("kenaito.config.global-ignore", "false"));
@@ -145,7 +145,7 @@ public class ConfigcenterContext {
 
 	public void setApiBaseUrl(String apiBaseUrl) {
 		if (apiBaseUrl == null || apiBaseUrl.isBlank()) {
-			throw new IllegalArgumentException("[kenaito.config.base.url] is required");
+			throw new IllegalArgumentException("[kenaito.config.baseUrl] is required");
 		}
 
 		String[] urls = apiBaseUrl.split(",|;");

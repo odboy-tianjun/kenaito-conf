@@ -27,6 +27,19 @@ public class KenaitoEnvironmentInitializer implements EnvironmentPostProcessor {
 		if (ccContext.isRemoteEnabled() && !ccContext.isProcessed()) {
 			Properties properties = new Properties();
 			ccContext.setEnvironment((StandardEnvironment) environment);
+			// Extract kenaito.config.* properties from Spring Environment
+            environment.getPropertySources().forEach(ps -> {
+                if (ps instanceof org.springframework.core.env.EnumerablePropertySource) {
+                    for (String key : ((org.springframework.core.env.EnumerablePropertySource<?>) ps).getPropertyNames()) {
+                        if (key.startsWith("kenaito.config.") || key.equals("spring.application.name")) {
+                            String val = environment.getProperty(key);
+                            if (val != null) {
+                                properties.setProperty(key, val);
+                            }
+                        }
+                    }
+                }
+            });
 			ccContext.init(properties, true);
 			ccContext.mergeRemoteProperties(properties);
 			PropertiesPropertySource propertySource = new PropertiesPropertySource(ConfigcenterContext.MANAGER_PROPERTY_SOURCE, properties);

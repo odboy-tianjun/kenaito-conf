@@ -245,7 +245,7 @@ public class ConfigcenterContext {
 		env = getProperty("kenaito.config.profile", "dev");
 		Validate.notBlank(env, "[kenaito.config.profile] is required");
 
-		setApiBaseUrl(getAnyProperty("kenaito.config.baseUrl", "kenaito.config.base.url"));
+		setApiBaseUrl(getAnyProperty("kenaito.config.baseUrl", "kenaito.config.baseUrl"));
 
 		version = getProperty("kenaito.config.version", "latest");
 		ignoreGlobal = getBoolean("kenaito.config.global-ignore", false);
@@ -269,7 +269,7 @@ public class ConfigcenterContext {
 	}
 
 	public void setApiBaseUrl(String apiBaseUrl) {
-		Validate.notBlank(apiBaseUrl, "[kenaito.config.base.url] is required");
+		Validate.notBlank(apiBaseUrl, "[kenaito.config.baseUrl] is required");
 		String[] urls = apiBaseUrl.split(",|;");
 		this.apiBaseUrls = new String[urls.length];
 		for (int i = 0; i < urls.length; i++) {

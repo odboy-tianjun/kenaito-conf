@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kenaito-conf"
+version = "1.0.0"
+description = "Kenaito Config Center Python Client"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.28",
+    "pyaes>=1.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]

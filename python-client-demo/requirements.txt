@@ -1,0 +1,2 @@
+flask>=3.0
+kenaito-conf>=1.0.0

@@ -1,0 +1,14 @@
+{
+  "crypto.secretKey": "k9#mP2$vL7qR4xN8",
+  "database.host": "127.0.0.1",
+  "database.name": "kenaito_conf",
+  "database.password": "1234567",
+  "database.port": "3306",
+  "database.user": "root",
+  "jwt.expireHours": "24",
+  "jwt.secret": "kenaito-conf-jwt-secret-2026",
+  "kenaito.config.encrypt-secret": "c4c20a0c6e991b26c34b0cefe78252c8",
+  "kenaito.config.global-encrypt-secret": "6879c141d108fb37a24d547611c80095",
+  "latest.fetch.timestamp": "1792052626435",
+  "server.port": "8084"
+}

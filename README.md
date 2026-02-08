@@ -6,7 +6,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x & 3.x）
+- **客户端**: Go / Java（Spring Boot 2.x & 3.x）/ Python / Node.js
 
 ## 项目结构
 
@@ -18,7 +18,11 @@ kenaito-conf/
 ├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x 客户端 SDK（JDK 8+）
 ├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x 客户端示例（端口 8081）
 ├── kenaito-conf-springboot3-client/     # Java Spring Boot 3 客户端 SDK（JDK 11+，预留升级路径）
-└── kenaito-conf-springboot3-client-demo/# Spring Boot 3 客户端示例（端口 8082，需 JDK 17+）
+├── kenaito-conf-springboot3-client-demo/# Spring Boot 3 客户端示例（端口 8082，需 JDK 17+）
+├── python-client/                       # Python 客户端 SDK（Python 3.10+）
+├── python-client-demo/                  # Python 客户端示例（端口 8082）
+├── nodejs-client/                       # Node.js 客户端 SDK（Node.js 18+）
+└── nodejs-client-demo/                  # Node.js 客户端示例（端口 8083）
 ```
 
 ## 快速开始
@@ -159,6 +163,98 @@ private String configValue;
 **2. 配置与使用方式同 Spring Boot 2.x 客户端。**
 
 > **注意：** 升级到 Spring Boot 3 需先将编译目标改为 JDK 17，并更新 `spring-boot.version` 为 3.x、Spring Framework 为 6.x。
+
+### Python 客户端
+
+适用于 Python 3.10+ 项目。
+
+**1. 安装**
+
+```bash
+cd python-client
+pip3 install -e .
+```
+
+**2. 使用**
+
+```python
+from kenaito_conf import Config, ConfigClient
+
+config = Config(
+    base_url="http://localhost:8080",
+    app_name="my-app",
+    env="daily",
+    sync_interval=30,
+)
+
+client = ConfigClient(config)
+
+# 监听配置变更
+def on_change(changed):
+    for k, v in changed.items():
+        print(f"config changed: {k} = {v}")
+
+client.on_change(on_change)
+
+# 启动客户端（拉取配置 + 开启定时同步）
+client.start()
+
+# 获取配置
+value = client.get("database.host")
+all_configs = client.get_all()
+
+# 停止
+client.stop()
+```
+
+### Node.js 客户端
+
+适用于 Node.js 18+ 项目。
+
+**1. 安装**
+
+```bash
+cd nodejs-client
+npm link
+```
+
+然后在你的项目中链接：
+
+```bash
+npm link kenaito-conf
+```
+
+**2. 使用**
+
+```javascript
+import { Config, ConfigClient } from 'kenaito-conf';
+
+const config = new Config({
+  baseUrl: 'http://localhost:8080',
+  appName: 'my-app',
+  env: 'daily',
+  syncInterval: 30,
+});
+
+const client = new ConfigClient(config);
+
+// 监听配置变更
+client.onChange((changed) => {
+  for (const [k, v] of Object.entries(changed)) {
+    console.log(`config changed: ${k} = ${v}`);
+  }
+});
+
+// 启动客户端（拉取配置 + 开启定时同步）
+await client.start();
+
+// 获取配置
+const value = client.get('database.host');
+const allConfigs = client.getAll();
+
+// 停止
+client.stop();
+```
 
 ## API 概览
 

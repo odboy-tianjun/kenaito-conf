@@ -1,0 +1,13 @@
+{
+  "name": "kenaito-conf-demo",
+  "version": "1.0.0",
+  "description": "Kenaito Config Center Node.js Demo",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "kenaito-conf": "file:../nodejs-client",
+    "express": "^4.18.0"
+  }
+}

@@ -9,6 +9,7 @@ type Application struct {
 	Name       string     `xorm:"varchar(32)" json:"name"`
 	Code       string     `xorm:"varchar(32)" json:"code"`
 	ServiceId  string     `xorm:"varchar(64)" json:"serviceId"`
+	Token      string     `xorm:"varchar(64)" json:"token"`
 	IsModule   bool       `xorm:"tinyint(1) default 1" json:"isModule"`
 	OwnerId    *int       `xorm:"int" json:"ownerId"`
 	OwnerName  string     `xorm:"varchar(16)" json:"ownerName"`

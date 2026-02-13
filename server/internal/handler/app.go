@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"kenaito-conf/server/internal/dao"
 	"kenaito-conf/server/internal/middleware"
 	"kenaito-conf/server/internal/model"
@@ -299,4 +301,51 @@ type AppTreeModel struct {
 	Code      string          `json:"code"`
 	ServiceId string          `json:"serviceId,omitempty"`
 	Children  []*AppTreeModel `json:"children"`
+}
+
+func (h *AppHandler) GenerateToken(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	userInfo := middleware.GetUserInfo(c)
+
+	var app model.Application
+	has, _ := dao.Engine.ID(id).Get(&app)
+	if !has {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "应用不存在"})
+		return
+	}
+
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 500, Msg: "生成 Token 失败"})
+		return
+	}
+	token := hex.EncodeToString(bytes)
+
+	app.Token = token
+	app.UpdatedBy = userInfo.Name
+	now := time.Now()
+	app.UpdatedAt = &now
+	dao.Engine.ID(app.Id).Cols("token", "updated_by", "updated_at").Update(&app)
+
+	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: token})
+}
+
+func (h *AppHandler) DeleteToken(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	userInfo := middleware.GetUserInfo(c)
+
+	var app model.Application
+	has, _ := dao.Engine.ID(id).Get(&app)
+	if !has {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "应用不存在"})
+		return
+	}
+
+	app.Token = ""
+	app.UpdatedBy = userInfo.Name
+	now := time.Now()
+	app.UpdatedAt = &now
+	dao.Engine.ID(app.Id).Cols("token", "updated_by", "updated_at").Update(&app)
+
+	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: true})
 }

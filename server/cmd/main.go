@@ -74,6 +74,8 @@ func main() {
 		admin.POST("/app/update", appHandler.Update)
 		admin.POST("/app/delete/:id", appHandler.Delete)
 		admin.POST("/app/switch/:id", appHandler.Switch)
+		admin.POST("/app/generateToken/:id", appHandler.GenerateToken)
+		admin.POST("/app/deleteToken/:id", appHandler.DeleteToken)
 		admin.GET("/app/options", appHandler.Options)
 
 		// user management

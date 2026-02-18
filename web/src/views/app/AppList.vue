@@ -10,14 +10,23 @@
       <el-table-column prop="code" label="应用编码"></el-table-column>
       <el-table-column prop="groupName" label="所属业务组" width="120"></el-table-column>
       <el-table-column prop="ownerName" label="负责人" width="100"></el-table-column>
+      <el-table-column prop="token" label="Token" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.token" style="color: #67C23A">已设置</span>
+          <span v-else style="color: #909399">未设置</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="enabled" label="状态" width="100">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.enabled" @change="handleSwitch(scope.row)"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150">
+      <el-table-column label="操作" width="200">
         <template slot-scope="scope">
           <el-button type="text" @click="showEdit(scope.row)">编辑</el-button>
+          <el-button type="text" @click="handleToken(scope.row)">
+            {{ scope.row.token ? '删除Token' : '生成Token' }}
+          </el-button>
           <el-button type="text" style="color: #F56C6C" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -62,7 +71,7 @@
 </template>
 
 <script>
-import { getAppList, addApp, updateApp, deleteApp } from '../../api/app'
+import { getAppList, addApp, updateApp, deleteApp, generateToken, deleteToken } from '../../api/app'
 import request from '../../api/request'
 
 export default {
@@ -146,6 +155,23 @@ export default {
         await request({ url: `/admin/app/switch/${row.id}`, method: 'post' })
       } catch (e) {
         row.enabled = !row.enabled
+      }
+    },
+    async handleToken(row) {
+      if (row.token) {
+        try {
+          await this.$confirm('确定删除此应用的 Token？删除后客户端将无法通过 Token 校验。')
+          await deleteToken(row.id)
+          this.$message.success('Token 已删除')
+          this.loadData()
+        } catch (e) {}
+      } else {
+        try {
+          await this.$confirm('确定为此应用生成 Token？生成后客户端需要配置此 Token 才能拉取配置。')
+          const res = await generateToken(row.id)
+          this.$message.success('Token 已生成: ' + res.data)
+          this.loadData()
+        } catch (e) {}
       }
     },
     handlePageChange(page) {

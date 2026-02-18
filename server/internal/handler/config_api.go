@@ -26,6 +26,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	env := c.Query("env")
 	version := c.DefaultQuery("version", "latest")
 	ignoreGlobal := c.DefaultQuery("ignoreGlobal", "false") == "true"
+	token := c.Query("token")
 
 	if appName == "" || env == "" {
 		c.JSON(http.StatusBadRequest, model.WrapperResponse{Code: 400, Msg: "参数缺失"})
@@ -37,6 +38,12 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	has, _ := dao.Engine.Where("code = ? AND enabled = 1", appName).Get(&app)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 1001, Msg: "配置不存在"})
+		return
+	}
+
+	// validate token if app has token configured
+	if app.Token != "" && app.Token != token {
+		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "Token 无效"})
 		return
 	}
 
@@ -101,6 +108,7 @@ type FetchChangedRequest struct {
 	LastTime     int64  `json:"lastTime" binding:"required"`
 	IgnoreGlobal bool   `json:"ignoreGlobal"`
 	FetchAll     bool   `json:"fetchAll"`
+	Token        string `json:"token"`
 }
 
 func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
@@ -114,6 +122,12 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	has, _ := dao.Engine.Where("code = ? AND enabled = 1", req.AppName).Get(&app)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 1001, Msg: "应用不存在"})
+		return
+	}
+
+	// validate token if app has token configured
+	if app.Token != "" && app.Token != req.Token {
+		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "Token 无效"})
 		return
 	}
 

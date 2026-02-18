@@ -51,3 +51,17 @@ export function getAppOptions() {
     method: 'get'
   })
 }
+
+export function generateToken(id) {
+  return request({
+    url: `/admin/app/generateToken/${id}`,
+    method: 'post'
+  })
+}
+
+export function deleteToken(id) {
+  return request({
+    url: `/admin/app/deleteToken/${id}`,
+    method: 'post'
+  })
+}

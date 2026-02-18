@@ -66,6 +66,7 @@ class ConfigClient:
             f"&env={self._config.env}"
             f"&version={self._config.version}"
             f"&ignoreGlobal={str(self._config.ignore_global).lower()}"
+            f"&token={self._config.token}"
         )
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
@@ -98,6 +99,7 @@ class ConfigClient:
             "version": self._config.version,
             "lastTime": self._last_time,
             "ignoreGlobal": self._config.ignore_global,
+            "token": self._config.token,
         }
         resp = requests.post(url, json=payload, timeout=10)
         resp.raise_for_status()

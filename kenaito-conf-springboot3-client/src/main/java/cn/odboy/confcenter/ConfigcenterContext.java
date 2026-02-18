@@ -355,12 +355,10 @@ public class ConfigcenterContext {
 	}
 
 	public String buildTokenParameter(String url) {
-		if (token == null || token.length() < 8) {
+		if (token == null || token.isEmpty()) {
 			return url;
 		}
-		String str = md5Short(token).concat(String.valueOf(new Date().getTime()));
-		String authtoken = desEncrypt(token.substring(0, 8), str).toLowerCase();
-		return url + (url.contains("?") ? "&" : "?") + "authtoken=" + authtoken;
+		return url + (url.contains("?") ? "&" : "?") + "token=" + token;
 	}
 
 	public void close() {

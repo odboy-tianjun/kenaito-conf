@@ -256,12 +256,19 @@ public class ConfigcenterContext {
 		String errorMsg = null;
 
 		for (String apiBaseUrl : apiBaseUrls) {
-			String url = buildTokenParameter(String.format("%s/api/fetchAllConfigs?appName=%s&env=%s&version=%s&ignoreGlobal=%s",
-					apiBaseUrl, app, env, version, ignoreGlobal));
+			String url = apiBaseUrl + "/api/fetchAllConfigs";
+			Map<String, Object> params = new HashMap<>();
+			params.put("appName", app);
+			params.put("env", env);
+			params.put("version", version);
+			params.put("ignoreGlobal", ignoreGlobal);
+			if (token != null && !token.isEmpty()) {
+				params.put("token", token);
+			}
 			System.out.println("fetch configs url:" + url);
 
 			try {
-				String jsonString = HttpUtils.get(url);
+				String jsonString = HttpUtils.postJson(url, objectMapper.writeValueAsString(params));
 				if (jsonString != null) {
 					result = objectMapper.readValue(jsonString, Map.class);
 					if (result.containsKey("code")) {

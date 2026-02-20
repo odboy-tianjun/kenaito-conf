@@ -112,10 +112,10 @@ func main() {
 		user.POST("/logout", authHandler.Logout)
 	}
 
-	// client API routes (no JWT, uses authtoken or open access)
+	// client API routes (no JWT, uses token or open access)
 	api := r.Group("/api")
 	{
-		api.GET("/fetchAllConfigs", configApiHandler.FetchAllConfigs)
+		api.POST("/fetchAllConfigs", configApiHandler.FetchAllConfigs)
 		api.POST("/fetchChangedConfigs", configApiHandler.FetchChangedConfigs)
 		api.GET("/ping", configApiHandler.Ping)
 	}

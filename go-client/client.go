@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -107,13 +108,25 @@ func (c *Client) Stop() {
 }
 
 func (c *Client) fetchAll() error {
-	url := fmt.Sprintf("%s/api/fetchAllConfigs?appName=%s&env=%s&version=%s&ignoreGlobal=%v",
-		c.config.BaseURL, c.config.AppName, c.config.Env, c.config.Version, c.config.IgnoreGlobal)
+	url := fmt.Sprintf("%s/api/fetchAllConfigs", c.config.BaseURL)
 
-	req, err := http.NewRequest("GET", url, nil)
+	payload := map[string]interface{}{
+		"appName":      c.config.AppName,
+		"env":          c.config.Env,
+		"version":      c.config.Version,
+		"ignoreGlobal": c.config.IgnoreGlobal,
+		"token":        c.config.Token,
+	}
+	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

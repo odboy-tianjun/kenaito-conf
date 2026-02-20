@@ -21,28 +21,41 @@ func NewConfigApiHandler(crypto *service.CryptoService, parse *service.ConfigPar
 	return &ConfigApiHandler{cryptoService: crypto, parseService: parse}
 }
 
-func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
-	appName := c.Query("appName")
-	env := c.Query("env")
-	version := c.DefaultQuery("version", "latest")
-	ignoreGlobal := c.DefaultQuery("ignoreGlobal", "false") == "true"
-	token := c.Query("token")
+type FetchAllRequest struct {
+	AppName      string `json:"appName" binding:"required"`
+	Env          string `json:"env" binding:"required"`
+	Version      string `json:"version"`
+	IgnoreGlobal bool   `json:"ignoreGlobal"`
+	Token        string `json:"token"`
+}
 
-	if appName == "" || env == "" {
+func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
+	var req FetchAllRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, model.WrapperResponse{Code: 400, Msg: "参数错误"})
+		return
+	}
+
+	version := req.Version
+	if version == "" {
+		version = "latest"
+	}
+
+	if req.AppName == "" || req.Env == "" {
 		c.JSON(http.StatusBadRequest, model.WrapperResponse{Code: 400, Msg: "参数缺失"})
 		return
 	}
 
 	// find app by code
 	var app model.Application
-	has, _ := dao.Engine.Where("code = ? AND enabled = 1", appName).Get(&app)
+	has, _ := dao.Engine.Where("code = ? AND enabled = 1", req.AppName).Get(&app)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 1001, Msg: "配置不存在"})
 		return
 	}
 
 	// validate token if app has token configured
-	if app.Token != "" && app.Token != token {
+	if app.Token != "" && app.Token != req.Token {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "Token 无效"})
 		return
 	}
@@ -50,10 +63,10 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	result := make(map[string]interface{})
 
 	// load global configs
-	if !ignoreGlobal && app.GroupId != nil {
+	if !req.IgnoreGlobal && app.GroupId != nil {
 		var globalConfigs []model.AppConfig
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0)",
-			env, version, *app.GroupId).Find(&globalConfigs)
+			req.Env, version, *app.GroupId).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
 			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 			for k, v := range kvMap {
@@ -66,7 +79,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	if app.ParentId != nil {
 		var parentConfigs []model.AppConfig
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ?",
-			env, version, *app.ParentId).Find(&parentConfigs)
+			req.Env, version, *app.ParentId).Find(&parentConfigs)
 		for _, cfg := range parentConfigs {
 			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 			for k, v := range kvMap {
@@ -78,7 +91,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	// load app configs
 	var appConfigs []model.AppConfig
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ?",
-		env, version, app.Id).Find(&appConfigs)
+		req.Env, version, app.Id).Find(&appConfigs)
 	for _, cfg := range appConfigs {
 		kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 		for k, v := range kvMap {
@@ -92,9 +105,9 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	}
 
 	// add encryption keys
-	globalCryptKey := h.cryptoService.GetCryptKey(0, env)
+	globalCryptKey := h.cryptoService.GetCryptKey(0, req.Env)
 	result["kenaito.config.global-encrypt-secret"] = globalCryptKey
-	appCryptKey := h.cryptoService.GetCryptKey(app.Id, env)
+	appCryptKey := h.cryptoService.GetCryptKey(app.Id, req.Env)
 	result["kenaito.config.encrypt-secret"] = appCryptKey
 	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
 

@@ -60,15 +60,15 @@ class ConfigClient:
         self._stop_event.set()
 
     def _fetch_all(self) -> None:
-        url = (
-            f"{self._config.base_url}/api/fetchAllConfigs"
-            f"?appName={self._config.app_name}"
-            f"&env={self._config.env}"
-            f"&version={self._config.version}"
-            f"&ignoreGlobal={str(self._config.ignore_global).lower()}"
-            f"&token={self._config.token}"
-        )
-        resp = requests.get(url, timeout=10)
+        url = f"{self._config.base_url}/api/fetchAllConfigs"
+        payload = {
+            "appName": self._config.app_name,
+            "env": self._config.env,
+            "version": self._config.version,
+            "ignoreGlobal": self._config.ignore_global,
+            "token": self._config.token,
+        }
+        resp = requests.post(url, json=payload, timeout=10)
         resp.raise_for_status()
         data = resp.json()
 

@@ -62,9 +62,20 @@ export class ConfigClient {
   }
 
   async fetchAll() {
-    const url = `${this.config.baseUrl}/api/fetchAllConfigs?appName=${encodeURIComponent(this.config.appName)}&env=${encodeURIComponent(this.config.env)}&version=${encodeURIComponent(this.config.version)}&ignoreGlobal=${this.config.ignoreGlobal}&token=${encodeURIComponent(this.config.token)}`;
+    const url = `${this.config.baseUrl}/api/fetchAllConfigs`;
+    const payload = {
+      appName: this.config.appName,
+      env: this.config.env,
+      version: this.config.version,
+      ignoreGlobal: this.config.ignoreGlobal,
+      token: this.config.token,
+    };
     const resp = await fetch(url, {
-      headers: this.config.token ? { Authorization: `Bearer ${this.config.token}` } : {},
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(10000),
     });
     if (!resp.ok) {

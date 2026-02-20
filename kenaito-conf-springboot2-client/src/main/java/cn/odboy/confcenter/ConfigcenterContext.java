@@ -365,11 +365,18 @@ public class ConfigcenterContext {
 		Map<String, Object> result = null;
 		String errorMsg = null;
 		for (String apiBaseUrl : apiBaseUrls) {
-			String url = buildTokenParameter(String.format("%s/api/fetchAllConfigs?appName=%s&env=%s&version=%s&ignoreGlobal=%s",
-					apiBaseUrl, app, env, version, ignoreGlobal));
+			String url = apiBaseUrl + "/api/fetchAllConfigs";
+			Map<String, Object> params = new HashMap<>();
+			params.put("appName", app);
+			params.put("env", env);
+			params.put("version", version);
+			params.put("ignoreGlobal", ignoreGlobal);
+			if (token != null && !token.isEmpty()) {
+				params.put("token", token);
+			}
 			logger.info("fetch configs url:{}", url);
 			try {
-				String jsonString = httpGet(url);
+				String jsonString = httpPostJson(url, JSON.toJSONString(params));
 				if (jsonString != null) {
 					result = JSON.parseObject(jsonString, Map.class);
 					if (result.containsKey("code")) {

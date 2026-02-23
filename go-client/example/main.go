@@ -12,10 +12,11 @@ import (
 func main() {
 	// create config
 	cfg := &client.Config{
-		BaseURL:      "http://localhost:8080",
-		AppName:      "kenaito-springboot-demo",
-		Env:          "daily",
-		Version:      "latest",
+		BaseURL: "http://localhost:8080",
+		AppName: "kenaito-springboot-demo",
+		Env:     "daily",
+		Version: "latest",
+		//Token:        "6f6966fe196572954b176c0e2a97bc399b050c6be31454b8d6b0f7f622b5d6f1",
 		SyncInterval: 30, // sync every 30 seconds
 		CacheDir:     ".",
 	}

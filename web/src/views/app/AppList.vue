@@ -10,9 +10,12 @@
       <el-table-column prop="code" label="应用编码"></el-table-column>
       <el-table-column prop="groupName" label="所属业务组" width="120"></el-table-column>
       <el-table-column prop="ownerName" label="负责人" width="100"></el-table-column>
-      <el-table-column prop="token" label="Token" width="120">
+      <el-table-column prop="token" label="Token" width="200">
         <template slot-scope="scope">
-          <span v-if="scope.row.token" style="color: #67C23A">已设置</span>
+          <template v-if="scope.row.token">
+            <span style="font-family: monospace; color: #606266">{{ maskToken(scope.row.token) }}</span>
+            <el-button type="text" size="mini" style="margin-left: 8px" @click="copyToken(scope.row.token)">复制</el-button>
+          </template>
           <span v-else style="color: #909399">未设置</span>
         </template>
       </el-table-column>
@@ -177,6 +180,17 @@ export default {
     handlePageChange(page) {
       this.query.pageNo = page
       this.loadData()
+    },
+    maskToken(token) {
+      if (!token || token.length <= 8) return '****'
+      return token.substring(0, 4) + '****' + token.substring(token.length - 4)
+    },
+    copyToken(token) {
+      navigator.clipboard.writeText(token).then(() => {
+        this.$message.success('Token 已复制到剪贴板')
+      }).catch(() => {
+        this.$message.error('复制失败')
+      })
     }
   }
 }

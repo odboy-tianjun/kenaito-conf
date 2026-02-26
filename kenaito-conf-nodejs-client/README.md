@@ -7,7 +7,7 @@
 将包注册为全局符号链接，之后任意项目都可以通过 `npm link kenaito-conf` 引用：
 
 ```bash
-cd nodejs-client
+cd kenaito-conf-nodejs-client
 npm link
 ```
 
@@ -22,7 +22,7 @@ npm link kenaito-conf
 ```bash
 # 在你的项目 package.json 中
 "dependencies": {
-  "kenaito-conf": "file:../nodejs-client"
+  "kenaito-conf": "file:../kenaito-conf-nodejs-client"
 }
 ```
 
@@ -78,7 +78,7 @@ client.stop();
 ## Demo
 
 ```bash
-cd nodejs-client-demo
+cd kenaito-conf-nodejs-client-demo
 npm install
 node app.js
 ```

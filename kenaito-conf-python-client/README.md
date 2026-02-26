@@ -3,7 +3,7 @@
 ## 安装
 
 ```bash
-cd python-client
+cd kenaito-conf-python-client
 pip3 install -e .
 ```
 
@@ -55,7 +55,7 @@ client.stop()
 ## Demo
 
 ```bash
-cd python-client-demo
+cd kenaito-conf-python-client-demo
 pip3 install -r requirements.txt
 python3 app.py
 ```

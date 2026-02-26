@@ -14,15 +14,15 @@
 kenaito-conf/
 ├── server/                              # Go 管理端（Gin + xorm）
 ├── web/                                 # Vue 2 前端
-├── go-client/                           # Go 客户端 SDK
+├── kenaito-conf-go-client/              # Go 客户端 SDK
 ├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x 客户端 SDK（JDK 8+）
 ├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x 客户端示例（端口 8081）
 ├── kenaito-conf-springboot3-client/     # Java Spring Boot 3 客户端 SDK（JDK 11+，预留升级路径）
 ├── kenaito-conf-springboot3-client-demo/# Spring Boot 3 客户端示例（端口 8082，需 JDK 17+）
-├── python-client/                       # Python 客户端 SDK（Python 3.10+）
-├── python-client-demo/                  # Python 客户端示例（端口 8082）
-├── nodejs-client/                       # Node.js 客户端 SDK（Node.js 18+）
-└── nodejs-client-demo/                  # Node.js 客户端示例（端口 8083）
+├── kenaito-conf-python-client/          # Python 客户端 SDK（Python 3.10+）
+├── kenaito-conf-python-client-demo/     # Python 客户端示例（端口 8082）
+├── kenaito-conf-nodejs-client/          # Node.js 客户端 SDK（Node.js 18+）
+└── kenaito-conf-nodejs-client-demo/     # Node.js 客户端示例（端口 8083）
 ```
 
 ## 快速开始
@@ -83,7 +83,7 @@ npm run dev
 ### Go 客户端
 
 ```go
-import "kenaito-conf/go-client"
+import "kenaito-conf/kenaito-conf-go-client"
 
 cfg := &client.Config{
     BaseURL:      "http://localhost:8080",
@@ -171,7 +171,7 @@ private String configValue;
 **1. 安装**
 
 ```bash
-cd python-client
+cd kenaito-conf-python-client
 pip3 install -e .
 ```
 
@@ -214,7 +214,7 @@ client.stop()
 **1. 安装**
 
 ```bash
-cd nodejs-client
+cd kenaito-conf-nodejs-client
 npm link
 ```
 

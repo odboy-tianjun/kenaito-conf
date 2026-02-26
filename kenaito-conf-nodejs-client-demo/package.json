@@ -7,7 +7,7 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "kenaito-conf": "file:../nodejs-client",
+    "kenaito-conf": "file:../kenaito-conf-nodejs-client",
     "express": "^4.18.0"
   }
 }

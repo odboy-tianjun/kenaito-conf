@@ -15,6 +15,7 @@ kenaito-conf/
 ├── server/                              # Go 管理端（Gin + xorm）
 ├── web/                                 # Vue 2 前端
 ├── kenaito-conf-go-client/              # Go 客户端 SDK
+├── kenaito-conf-go-client-demo/         # Go 客户端示例
 ├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x 客户端 SDK（JDK 8+）
 ├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x 客户端示例（端口 8081）
 ├── kenaito-conf-springboot3-client/     # Java Spring Boot 3 客户端 SDK（JDK 11+，预留升级路径）

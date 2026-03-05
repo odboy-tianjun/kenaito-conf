@@ -1,0 +1,16 @@
+[package]
+name = "kenaito-conf"
+version = "1.0.0"
+edition = "2021"
+authors = ["odboy <tianjun@odboy.cn>"]
+description = "Kenaito Config Center Rust Client"
+
+[dependencies]
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+md-5 = "0.10"
+aes = "0.8"
+cbc = "0.1"
+base64 = "0.21"

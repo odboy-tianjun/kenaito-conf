@@ -1,0 +1,16 @@
+{
+    "name": "kenaito/conf-client",
+    "description": "Kenaito Config Center PHP Client",
+    "type": "library",
+    "require": {
+        "php": ">=8.0",
+        "ext-curl": "*",
+        "ext-openssl": "*",
+        "ext-pcntl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "KenaitoConf\\": "src/"
+        }
+    }
+}

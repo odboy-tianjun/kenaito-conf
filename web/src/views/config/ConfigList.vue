@@ -24,8 +24,8 @@
       <el-table-column prop="version" label="版本" width="100"></el-table-column>
       <el-table-column label="操作" width="200">
         <template slot-scope="scope">
+          <el-button type="text" @click="showHistory(scope.row)">变更历史</el-button>
           <el-button type="text" @click="$router.push(`/config/edit/${scope.row.id}`)">编辑</el-button>
-          <el-button type="text" @click="showHistory(scope.row)">历史</el-button>
           <el-button type="text" style="color: #F56C6C" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -39,7 +39,7 @@
       layout="total, prev, pager, next"
     ></el-pagination>
 
-    <el-dialog title="配置历史" :visible.sync="historyVisible" width="900px">
+    <el-dialog title="变更历史" :visible.sync="historyVisible" width="900px">
       <el-table :data="historyList" border stripe>
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
         <el-table-column prop="createdBy" label="操作人" width="100"></el-table-column>
@@ -57,26 +57,134 @@
       </el-table>
     </el-dialog>
 
-    <el-dialog title="历史版本内容" :visible.sync="contentVisible" width="800px" append-to-body>
+    <el-dialog title="历史版本对比" :visible.sync="contentVisible" width="1200px" append-to-body>
       <div style="margin-bottom: 10px">
-        <strong>配置名称：</strong>{{ currentHistory.name }} | 
-        <strong>版本：</strong>{{ currentHistory.version }} | 
+        <strong>配置名称：</strong>{{ currentHistory.name }} |
+        <strong>版本：</strong>{{ currentHistory.version }} |
         <strong>类型：</strong>{{ getTypeName(currentHistory.type) }}
       </div>
-      <el-input 
-        v-model="formattedContent" 
-        type="textarea" 
-        :rows="25" 
-        readonly
-        style="font-family: monospace"
-      ></el-input>
+      <div style="margin-bottom: 8px; font-size: 13px; color: #666;">
+        <span style="background: #ffeef0; padding: 2px 6px; margin-right: 10px;">红色 = 已删除</span>
+        <span style="background: #e6ffed; padding: 2px 6px; margin-right: 10px;">绿色 = 新增</span>
+        <span style="background: #fff8e1; padding: 2px 6px;">黄色 = 已修改</span>
+      </div>
+      <div class="diff-container">
+        <div class="diff-panel">
+          <div class="diff-panel-header">当前生效配置</div>
+          <div class="diff-panel-body">
+            <div v-for="(line, index) in leftLines" :key="'l'+index" :class="['diff-line', line.type]">
+              <span class="line-number">{{ line.lineNum }}</span>
+              <span class="line-content">{{ line.text }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="diff-panel">
+          <div class="diff-panel-header">历史版本</div>
+          <div class="diff-panel-body">
+            <div v-for="(line, index) in rightLines" :key="'r'+index" :class="['diff-line', line.type]">
+              <span class="line-number">{{ line.lineNum }}</span>
+              <span class="line-content">{{ line.text }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </el-dialog>
   </el-card>
 </template>
 
 <script>
-import { getConfigList, deleteConfig, getConfigHistory, rollbackConfig } from '../../api/config'
+import { getConfigList, deleteConfig, getConfigHistory, rollbackConfig, getConfig } from '../../api/config'
 import request from '../../api/request'
+
+function computeDiff(oldText, newText) {
+  const oldLines = oldText.split('\n')
+  const newLines = newText.split('\n')
+  const m = oldLines.length
+  const n = newLines.length
+
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (oldLines[i - 1] === newLines[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1])
+      }
+    }
+  }
+
+  const ops = []
+  let i = m, j = n
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
+      ops.push({ type: 'equal', oldIdx: i - 1, newIdx: j - 1 })
+      i--; j--
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      ops.push({ type: 'added', newIdx: j - 1 })
+      j--
+    } else {
+      ops.push({ type: 'removed', oldIdx: i - 1 })
+      i--
+    }
+  }
+  ops.reverse()
+
+  // 配对相邻 removed+added 为 modified
+  const paired = []
+  let k = 0
+  while (k < ops.length) {
+    if (ops[k].type === 'removed') {
+      const removedGroup = []
+      while (k < ops.length && ops[k].type === 'removed') {
+        removedGroup.push(ops[k])
+        k++
+      }
+      const addedGroup = []
+      while (k < ops.length && ops[k].type === 'added') {
+        addedGroup.push(ops[k])
+        k++
+      }
+      const pairCount = Math.min(removedGroup.length, addedGroup.length)
+      for (let p = 0; p < pairCount; p++) {
+        paired.push({ type: 'modified', oldIdx: removedGroup[p].oldIdx, newIdx: addedGroup[p].newIdx })
+      }
+      for (let p = pairCount; p < removedGroup.length; p++) {
+        paired.push(removedGroup[p])
+      }
+      for (let p = pairCount; p < addedGroup.length; p++) {
+        paired.push(addedGroup[p])
+      }
+    } else {
+      paired.push(ops[k])
+      k++
+    }
+  }
+
+  // 生成左右面板行
+  const left = []
+  const right = []
+  let leftNum = 0, rightNum = 0
+  for (const op of paired) {
+    if (op.type === 'equal') {
+      leftNum++; rightNum++
+      left.push({ text: oldLines[op.oldIdx], type: 'unchanged', lineNum: leftNum })
+      right.push({ text: newLines[op.newIdx], type: 'unchanged', lineNum: rightNum })
+    } else if (op.type === 'modified') {
+      leftNum++; rightNum++
+      left.push({ text: oldLines[op.oldIdx], type: 'modified', lineNum: leftNum })
+      right.push({ text: newLines[op.newIdx], type: 'modified', lineNum: rightNum })
+    } else if (op.type === 'removed') {
+      leftNum++
+      left.push({ text: oldLines[op.oldIdx], type: 'removed', lineNum: leftNum })
+      right.push({ text: '', type: 'empty', lineNum: '' })
+    } else if (op.type === 'added') {
+      rightNum++
+      left.push({ text: '', type: 'empty', lineNum: '' })
+      right.push({ text: newLines[op.newIdx], type: 'added', lineNum: rightNum })
+    }
+  }
+  return { left, right }
+}
 
 export default {
   data() {
@@ -91,7 +199,8 @@ export default {
       currentConfig: null,
       contentVisible: false,
       currentHistory: {},
-      formattedContent: ''
+      leftLines: [],
+      rightLines: []
     }
   },
   created() {
@@ -135,17 +244,23 @@ export default {
         this.historyVisible = true
       } catch (e) {}
     },
-    viewHistoryContent(row) {
+    async viewHistoryContent(row) {
       this.currentHistory = row
-      const content = row.contents || ''
-      if (row.type === 3) {
-        try {
-          this.formattedContent = JSON.stringify(JSON.parse(content), null, 2)
-        } catch (e) {
-          this.formattedContent = content
+      const historyContent = row.contents || ''
+      const formatted = row.type === 3 ? (() => { try { return JSON.stringify(JSON.parse(historyContent), null, 2) } catch (e) { return historyContent } })() : historyContent
+
+      this.leftLines = []
+      this.rightLines = []
+      try {
+        const res = await getConfig(row.originId)
+        if (res && res.data && res.data.contents) {
+          const currentRaw = res.data.type === 3 ? (() => { try { return JSON.stringify(JSON.parse(res.data.contents), null, 2) } catch (e) { return res.data.contents } })() : res.data.contents
+          const result = computeDiff(currentRaw, formatted)
+          this.leftLines = result.left
+          this.rightLines = result.right
         }
-      } else {
-        this.formattedContent = content
+      } catch (e) {
+        this.rightLines = formatted.split('\n').map((line, i) => ({ lineNum: i + 1, text: line, type: 'unchanged' }))
       }
       this.contentVisible = true
     },
@@ -173,3 +288,78 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+::v-deep .diff-container {
+  display: flex;
+  gap: 2px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+::v-deep .diff-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+::v-deep .diff-panel-header {
+  background: #f5f7fa;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #606266;
+  border-bottom: 1px solid #dcdfe6;
+}
+
+::v-deep .diff-panel-body {
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+::v-deep .diff-line {
+  display: flex;
+  padding: 0 10px;
+  line-height: 22px;
+  white-space: pre;
+  min-height: 22px;
+}
+
+::v-deep .diff-line .line-number {
+  flex-shrink: 0;
+  width: 40px;
+  text-align: right;
+  padding-right: 10px;
+  color: #909399;
+  border-right: 1px solid #ebeef5;
+  margin-right: 10px;
+  user-select: none;
+}
+
+::v-deep .diff-line .line-content {
+  flex: 1;
+  overflow-x: auto;
+}
+
+::v-deep .diff-line.added {
+  background: #e6ffed;
+}
+
+::v-deep .diff-line.removed {
+  background: #ffeef0;
+}
+
+::v-deep .diff-line.modified {
+  background: #fff8e1;
+}
+
+::v-deep .diff-line.unchanged {
+  background: #fff;
+}
+
+::v-deep .diff-line.empty {
+  background: #fafafa;
+}
+</style>

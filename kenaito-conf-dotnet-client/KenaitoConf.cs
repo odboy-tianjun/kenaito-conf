@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -20,39 +19,6 @@ namespace KenaitoConf
         public int SyncInterval { get; set; } = 60;
         public bool IgnoreGlobal { get; set; } = false;
         public string CacheDir { get; set; } = ".";
-    }
-
-    public static class Crypto
-    {
-        private const string CryptPrefix = "{Cipher}";
-
-        public static string DecryptConfig(string secret, string data)
-        {
-            if (!data.StartsWith(CryptPrefix))
-                return data;
-            return DecryptWithAES(secret, data.Substring(CryptPrefix.Length));
-        }
-
-        public static string DecryptWithAES(string key, string data)
-        {
-            using var md5 = MD5.Create();
-            string md5Hash = BitConverter.ToString(md5.ComputeHash(Encoding.UTF8.GetBytes(key))).Replace("-", "").ToLower();
-            string aesKeyStr = md5Hash.Substring(16);
-            byte[] aesKey = Encoding.UTF8.GetBytes(aesKeyStr);
-            byte[] cipherText = Convert.FromBase64String(data);
-            byte[] iv = new byte[16];
-
-            using var aes = Aes.Create();
-            aes.Key = aesKey;
-            aes.IV = iv;
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.None;
-
-            using var decryptor = aes.CreateDecryptor();
-            byte[] plainText = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
-            int padding = plainText[plainText.Length - 1];
-            return Encoding.UTF8.GetString(plainText, 0, plainText.Length - padding);
-        }
     }
 
     public class Cache
@@ -86,8 +52,6 @@ namespace KenaitoConf
         private readonly Cache _cache;
         private readonly HttpClient _http = new();
         private readonly Dictionary<string, string> _configs = new();
-        private string _secret = "";
-        private string _globalSecret = "";
         private long _lastTime = 0;
         private bool _started = false;
         private CancellationTokenSource _cts;
@@ -188,10 +152,6 @@ namespace KenaitoConf
                     throw new Exception($"server error: {(data.ContainsKey("msg") ? data["msg"] : "unknown")}");
             }
 
-            if (data.TryGetValue("kenaito.config.encrypt-secret", out var s))
-                _secret = s?.ToString() ?? "";
-            if (data.TryGetValue("kenaito.config.global-encrypt-secret", out var gs))
-                _globalSecret = gs?.ToString() ?? "";
             if (data.TryGetValue("latest.fetch.timestamp", out var ts))
                 _lastTime = Convert.ToInt64(ts);
 
@@ -231,7 +191,7 @@ namespace KenaitoConf
             var changed = new Dictionary<string, string>();
             foreach (var kv in changedData)
             {
-                changed[kv.Key] = TryDecrypt(kv.Value?.ToString() ?? "");
+                changed[kv.Key] = kv.Value?.ToString() ?? "";
             }
 
             foreach (var kv in changed)
@@ -252,16 +212,8 @@ namespace KenaitoConf
                     continue;
                 if (kv.Value is JsonElement)
                     continue;
-                _configs[kv.Key] = TryDecrypt(kv.Value?.ToString() ?? "");
+                _configs[kv.Key] = kv.Value?.ToString() ?? "";
             }
-        }
-
-        private string TryDecrypt(string value)
-        {
-            string decrypted = Crypto.DecryptConfig(_secret, value);
-            if (decrypted == value && !string.IsNullOrEmpty(_globalSecret))
-                decrypted = Crypto.DecryptConfig(_globalSecret, value);
-            return decrypted;
         }
     }
 }

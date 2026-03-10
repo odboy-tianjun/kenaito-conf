@@ -30,15 +30,14 @@ func main() {
 
 	// init services
 	authService := service.NewAuthService(config.Cfg.JWT.Secret, config.Cfg.JWT.ExpireHours)
-	cryptoService := service.NewCryptoService()
 	parseService := service.NewConfigParseService()
 	permService := service.NewPermissionService()
 
 	// init handlers
 	authHandler := handler.NewAuthHandler(authService)
 	indexHandler := handler.NewIndexHandler()
-	configHandler := handler.NewConfigHandler(cryptoService, parseService, permService)
-	configApiHandler := handler.NewConfigApiHandler(cryptoService, parseService)
+	configHandler := handler.NewConfigHandler(parseService, permService)
+	configApiHandler := handler.NewConfigApiHandler(parseService)
 	appHandler := handler.NewAppHandler()
 	userHandler := handler.NewUserHandler(permService)
 	groupHandler := handler.NewGroupHandler()

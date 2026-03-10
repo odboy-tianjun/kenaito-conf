@@ -8,12 +8,8 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.security.MessageDigest
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
-import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 @Serializable
 data class Config(
@@ -27,27 +23,6 @@ data class Config(
     val cacheDir: String = "."
 )
 
-object Crypto {
-    private const val CRYPT_PREFIX = "{Cipher}"
-
-    fun decryptConfig(secret: String, data: String): String {
-        if (!data.startsWith(CRYPT_PREFIX)) return data
-        return decryptWithAES(secret, data.removePrefix(CRYPT_PREFIX))
-    }
-
-    fun decryptWithAES(key: String, data: String): String {
-        val md5 = MessageDigest.getInstance("MD5").digest(key.toByteArray()).joinToString("") { "%02x".format(it) }
-        val aesKey = md5.substring(16).toByteArray()
-        val cipherText = java.util.Base64.getDecoder().decode(data)
-        val iv = IvParameterSpec(ByteArray(16))
-        val cipher = Cipher.getInstance("AES/CBC/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(aesKey, "AES"), iv)
-        val plainText = cipher.doFinal(cipherText)
-        val padding = plainText.last().toInt() and 0xFF
-        return String(plainText, 0, plainText.size - padding)
-    }
-}
-
 class Cache(private val cacheDir: String) {
     private val cacheFile = File(cacheDir, "config-cache.json")
     fun write(data: String) { cacheFile.writeText(data) }
@@ -57,8 +32,6 @@ class Cache(private val cacheDir: String) {
 class ConfigClient(private val config: Config) {
     private val httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build()
     private val configs = ConcurrentHashMap<String, String>()
-    private var secret = ""
-    private var globalSecret = ""
     private var lastTime = 0L
     private var started = false
     private val handlers = mutableListOf<(Map<String, String>) -> Unit>()
@@ -101,8 +74,6 @@ class ConfigClient(private val config: Config) {
         val data = json.parseToJsonElement(resp.body()).jsonObject
         if (data.containsKey("code") && data["code"]!!.jsonPrimitive.int != 0)
             throw RuntimeException("server error: ${data["code"]}")
-        data["kenaito.config.encrypt-secret"]?.let { secret = it.jsonPrimitive.content }
-        data["kenaito.config.global-encrypt-secret"]?.let { globalSecret = it.jsonPrimitive.content }
         data["latest.fetch.timestamp"]?.let { lastTime = it.jsonPrimitive.content.toLong() }
         Cache(config.cacheDir).write(resp.body())
         applyConfigs(resp.body())
@@ -121,7 +92,7 @@ class ConfigClient(private val config: Config) {
         val changedData = result["data"]!!.jsonObject.toMutableMap()
         changedData.remove("latest.fetch.timestamp")?.let { lastTime = it.jsonPrimitive.content.toLong() }
         val changed = mutableMapOf<String, String>()
-        changedData.forEach { (k, v) -> changed[k] = tryDecrypt(v.jsonPrimitive.content) }
+        changedData.forEach { (k, v) -> changed[k] = v.jsonPrimitive.content }
         configs.putAll(changed)
         handlers.forEach { try { it(changed) } catch (e: Exception) { System.err.println("[ConfigClient] handler error: ${e.message}") } }
     }
@@ -130,13 +101,7 @@ class ConfigClient(private val config: Config) {
         val data = json.parseToJsonElement(jsonStr).jsonObject
         data.forEach { (k, v) ->
             if (!k.startsWith("kenaito.") && k != "latest.fetch.timestamp")
-                configs[k] = tryDecrypt(v.jsonPrimitive.content)
+                configs[k] = v.jsonPrimitive.content
         }
-    }
-
-    private fun tryDecrypt(value: String): String {
-        var decrypted = Crypto.decryptConfig(secret, value)
-        if (decrypted == value && globalSecret.isNotEmpty()) decrypted = Crypto.decryptConfig(globalSecret, value)
-        return decrypted
     }
 }

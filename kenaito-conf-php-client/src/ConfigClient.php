@@ -7,8 +7,6 @@ class ConfigClient
     private Config $config;
     private Cache $cache;
     private array $configs = [];
-    private string $secret = '';
-    private string $globalSecret = '';
     private int $lastTime = 0;
     private bool $started = false;
     private array $handlers = [];
@@ -107,12 +105,6 @@ class ConfigClient
             throw new \RuntimeException("server error: " . ($data['msg'] ?? 'unknown'));
         }
 
-        if (isset($data['kenaito.config.encrypt-secret'])) {
-            $this->secret = $data['kenaito.config.encrypt-secret'];
-        }
-        if (isset($data['kenaito.config.global-encrypt-secret'])) {
-            $this->globalSecret = $data['kenaito.config.global-encrypt-secret'];
-        }
         if (isset($data['latest.fetch.timestamp'])) {
             $this->lastTime = (int)$data['latest.fetch.timestamp'];
         }
@@ -156,7 +148,7 @@ class ConfigClient
 
         $changed = [];
         foreach ($changedData as $k => $v) {
-            $changed[$k] = $this->tryDecrypt($v);
+            $changed[$k] = $v;
         }
 
         $this->configs = array_merge($this->configs, $changed);
@@ -181,16 +173,7 @@ class ConfigClient
             if (!is_string($v)) {
                 continue;
             }
-            $this->configs[$k] = $this->tryDecrypt($v);
+            $this->configs[$k] = $v;
         }
-    }
-
-    private function tryDecrypt(string $value): string
-    {
-        $decrypted = Crypto::decryptConfig($this->secret, $value);
-        if ($decrypted === $value && $this->globalSecret) {
-            $decrypted = Crypto::decryptConfig($this->globalSecret, $value);
-        }
-        return $decrypted;
     }
 }

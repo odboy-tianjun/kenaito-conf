@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"kenaito-conf/server/internal/dao"
 	"kenaito-conf/server/internal/model"
 	"strconv"
@@ -47,12 +48,14 @@ func (s *AuthService) Login(userName, password string) (string, *model.LoginUser
 	s.loadPermissions(userInfo, user.Id)
 
 	// generate JWT
+	now := time.Now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userId":  user.Id,
 		"name":    user.Name,
 		"type":    user.Type,
 		"groupId": user.GroupId,
-		"exp":     time.Now().Add(time.Duration(s.expireHrs) * time.Hour).Unix(),
+		"iat":     now.Unix(),
+		"exp":     now.Add(time.Duration(s.expireHrs) * time.Hour).Unix(),
 	})
 	tokenString, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
@@ -64,6 +67,9 @@ func (s *AuthService) Login(userName, password string) (string, *model.LoginUser
 
 func (s *AuthService) ValidateToken(tokenString string) (*model.LoginUserInfo, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return []byte(s.jwtSecret), nil
 	})
 	if err != nil {
@@ -80,6 +86,19 @@ func (s *AuthService) ValidateToken(tokenString string) (*model.LoginUserInfo, e
 	has, err := dao.Engine.ID(userId).Get(&user)
 	if err != nil || !has {
 		return nil, errors.New("user not found")
+	}
+
+	// 检查用户是否已被禁用
+	if !user.Enabled {
+		return nil, errors.New("user is disabled")
+	}
+
+	// 检查 token 是否在登出后签发
+	if user.LastLogoutAt != nil {
+		iat := int64(claims["iat"].(float64))
+		if iat <= user.LastLogoutAt.Unix() {
+			return nil, errors.New("token is invalid after logout")
+		}
 	}
 
 	userInfo := &model.LoginUserInfo{

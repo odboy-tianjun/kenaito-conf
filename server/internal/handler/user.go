@@ -6,7 +6,7 @@ import (
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/service"
 	"kenaito-conf/server/internal/util"
-	"math/rand"
+	"crypto/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -341,8 +341,9 @@ func (h *UserHandler) Options(c *gin.Context) {
 func randomString(n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, n)
+	_, _ = rand.Read(b)
 	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+		b[i] = letters[int(b[i])%len(letters)]
 	}
 	return string(b)
 }

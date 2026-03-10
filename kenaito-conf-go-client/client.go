@@ -18,8 +18,6 @@ type Client struct {
 	cache      *Cache
 	listener   *Listener
 	configs    map[string]string
-	secret     string
-	globalSecret string
 	lastTime   int64
 	mu         sync.RWMutex
 	httpClient *http.Client
@@ -157,14 +155,6 @@ func (c *Client) fetchAll() error {
 		}
 	}
 
-	// extract secrets
-	if s, ok := result["kenaito.config.encrypt-secret"]; ok {
-		c.secret, _ = s.(string)
-	}
-	if s, ok := result["kenaito.config.global-encrypt-secret"]; ok {
-		c.globalSecret, _ = s.(string)
-	}
-
 	// extract timestamp
 	if ts, ok := result["latest.fetch.timestamp"]; ok {
 		if tsStr, ok := ts.(string); ok {
@@ -234,17 +224,9 @@ func (c *Client) fetchChanged() error {
 	}
 
 	if len(wrapper.Data) > 0 {
-		// decrypt values
 		changed := make(map[string]string)
 		for k, v := range wrapper.Data {
-			decrypted, err := decryptConfig(c.secret, v)
-			if err != nil && c.globalSecret != "" {
-				decrypted, err = decryptConfig(c.globalSecret, v)
-			}
-			if err != nil {
-				decrypted = v
-			}
-			changed[k] = decrypted
+			changed[k] = v
 		}
 
 		// update local configs
@@ -275,15 +257,7 @@ func (c *Client) applyConfigs(data map[string]interface{}) {
 		if !ok {
 			continue
 		}
-		// decrypt if needed - try app secret first, then global secret
-		decrypted, err := decryptConfig(c.secret, strVal)
-		if err != nil && c.globalSecret != "" {
-			decrypted, err = decryptConfig(c.globalSecret, strVal)
-		}
-		if err != nil {
-			decrypted = strVal
-		}
-		c.configs[k] = decrypted
+		c.configs[k] = strVal
 	}
 }
 

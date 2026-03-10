@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"kenaito-conf/server/internal/dao"
 	"kenaito-conf/server/internal/middleware"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/service"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,5 +54,11 @@ func (h *AuthHandler) GetLoginUserInfo(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
+	userInfo := middleware.GetUserInfo(c)
+	if userInfo != nil {
+		userId, _ := strconv.Atoi(userInfo.Id)
+		now := time.Now()
+		dao.Engine.ID(userId).Cols("last_logout_at").Update(&model.User{LastLogoutAt: &now})
+	}
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0})
 }

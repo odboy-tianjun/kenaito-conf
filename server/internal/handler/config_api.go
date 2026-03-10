@@ -13,12 +13,11 @@ import (
 )
 
 type ConfigApiHandler struct {
-	cryptoService *service.CryptoService
 	parseService  *service.ConfigParseService
 }
 
-func NewConfigApiHandler(crypto *service.CryptoService, parse *service.ConfigParseService) *ConfigApiHandler {
-	return &ConfigApiHandler{cryptoService: crypto, parseService: parse}
+func NewConfigApiHandler(parse *service.ConfigParseService) *ConfigApiHandler {
+	return &ConfigApiHandler{parseService: parse}
 }
 
 type FetchAllRequest struct {
@@ -104,11 +103,6 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		return
 	}
 
-	// add encryption keys
-	globalCryptKey := h.cryptoService.GetCryptKey(0, req.Env)
-	result["kenaito.config.global-encrypt-secret"] = globalCryptKey
-	appCryptKey := h.cryptoService.GetCryptKey(app.Id, req.Env)
-	result["kenaito.config.encrypt-secret"] = appCryptKey
 	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
 
 	c.JSON(http.StatusOK, result)

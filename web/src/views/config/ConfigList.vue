@@ -255,9 +255,9 @@ export default {
         const res = await getConfig(row.originId)
         if (res && res.data && res.data.contents) {
           const currentRaw = res.data.type === 3 ? (() => { try { return JSON.stringify(JSON.parse(res.data.contents), null, 2) } catch (e) { return res.data.contents } })() : res.data.contents
-          const result = computeDiff(currentRaw, formatted)
-          this.leftLines = result.left
-          this.rightLines = result.right
+          const result = computeDiff(formatted, currentRaw)
+          this.leftLines = result.right
+          this.rightLines = result.left
         }
       } catch (e) {
         this.rightLines = formatted.split('\n').map((line, i) => ({ lineNum: i + 1, text: line, type: 'unchanged' }))

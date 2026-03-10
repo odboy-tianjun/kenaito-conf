@@ -6,7 +6,6 @@ import requests
 
 from kenaito_conf.cache import Cache
 from kenaito_conf.config import Config
-from kenaito_conf.crypto import decrypt_config
 from kenaito_conf.listener import Listener
 
 logger = logging.getLogger("kenaito_conf")
@@ -18,8 +17,6 @@ class ConfigClient:
         self._cache = Cache(config.cache_dir)
         self._listener = Listener()
         self._configs: dict[str, str] = {}
-        self._secret: str = ""
-        self._global_secret: str = ""
         self._last_time: int = 0
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
@@ -75,14 +72,6 @@ class ConfigClient:
         if data.get("code", 0) != 0:
             raise RuntimeError(f"server error: {data.get('msg', 'unknown')}")
 
-        secret = data.get("kenaito.config.encrypt-secret")
-        if secret:
-            self._secret = secret
-
-        global_secret = data.get("kenaito.config.global-encrypt-secret")
-        if global_secret:
-            self._global_secret = global_secret
-
         ts = data.get("latest.fetch.timestamp")
         if ts:
             self._last_time = int(ts)
@@ -117,8 +106,7 @@ class ConfigClient:
         if changed_data:
             changed = {}
             for k, v in changed_data.items():
-                decrypted = self._try_decrypt(v)
-                changed[k] = decrypted
+                changed[k] = v
 
             with self._lock:
                 self._configs.update(changed)
@@ -133,13 +121,7 @@ class ConfigClient:
                     continue
                 if not isinstance(v, str):
                     continue
-                self._configs[k] = self._try_decrypt(v)
-
-    def _try_decrypt(self, value: str) -> str:
-        decrypted = decrypt_config(self._secret, value)
-        if decrypted == value and self._global_secret:
-            decrypted = decrypt_config(self._global_secret, value)
-        return decrypted
+                self._configs[k] = v
 
     def _sync_loop(self) -> None:
         while not self._stop_event.is_set():

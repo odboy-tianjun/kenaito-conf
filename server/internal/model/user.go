@@ -3,18 +3,19 @@ package model
 import "time"
 
 type User struct {
-	Id           int        `xorm:"int autoincr pk" json:"id"`
-	GroupId      *int       `xorm:"int" json:"groupId"`
-	Name         string     `xorm:"varchar(16)" json:"name"`
-	Password     string     `xorm:"varchar(64)" json:"-"`
-	Mobile       string     `xorm:"char(11)" json:"mobile"`
-	Email        string     `xorm:"varchar(32)" json:"email"`
-	Type         string     `xorm:"varchar(16) default 'user'" json:"type"` // user, groupAdmin, superAdmin
-	Enabled      bool       `xorm:"tinyint(1) default 1" json:"enabled"`
-	CreatedAt    *time.Time `xorm:"datetime" json:"createdAt"`
-	UpdatedAt    *time.Time `xorm:"datetime" json:"updatedAt"`
-	GroupName    string     `xorm:"-" json:"groupName,omitempty"`
-	GroupMaster  bool       `xorm:"-" json:"groupMaster,omitempty"`
+	Id            int        `xorm:"int autoincr pk" json:"id"`
+	GroupId       *int       `xorm:"int" json:"groupId"`
+	Name          string     `xorm:"varchar(16)" json:"name"`
+	Password      string     `xorm:"varchar(64)" json:"-"`
+	Mobile        string     `xorm:"char(11)" json:"mobile"`
+	Email         string     `xorm:"varchar(32)" json:"email"`
+	Type          string     `xorm:"varchar(16) default 'user'" json:"type"` // user, groupAdmin, superAdmin
+	Enabled       bool       `xorm:"tinyint(1) default 1" json:"enabled"`
+	CreatedAt     *time.Time `xorm:"datetime" json:"createdAt"`
+	UpdatedAt     *time.Time `xorm:"datetime" json:"updatedAt"`
+	LastLogoutAt  *time.Time `xorm:"datetime" json:"-"`
+	GroupName     string     `xorm:"-" json:"groupName,omitempty"`
+	GroupMaster   bool       `xorm:"-" json:"groupMaster,omitempty"`
 }
 
 type UserPermission struct {

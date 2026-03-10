@@ -2,8 +2,6 @@
 
 require 'net/http'
 require 'json'
-require 'openssl'
-require 'base64'
 
 module KenaitoConf
   class Config
@@ -18,33 +16,6 @@ module KenaitoConf
       @sync_interval = options[:sync_interval] || 60
       @ignore_global = options[:ignore_global] || false
       @cache_dir = options[:cache_dir] || '.'
-    end
-  end
-
-  module Crypto
-    CRYPT_PREFIX = '{Cipher}'
-
-    def self.decrypt_config(secret, data)
-      return data unless data.start_with?(CRYPT_PREFIX)
-      encrypted = data[CRYPT_PREFIX.length..]
-      decrypt_with_aes(secret, encrypted)
-    end
-
-    def self.decrypt_with_aes(key, data)
-      md5_hash = OpenSSL::Digest::MD5.hexdigest(key)
-      aes_key = md5_hash[16..]
-      cipher_text = Base64.decode64(data)
-      iv = "\0" * 16
-
-      cipher = OpenSSL::Cipher::AES128.new(:CBC)
-      cipher.decrypt
-      cipher.key = aes_key
-      cipher.iv = iv
-      cipher.padding = 0
-
-      plain_text = cipher.update(cipher_text) + cipher.final
-      padding = plain_text[-1].ord
-      plain_text[0...-padding]
     end
   end
 
@@ -73,8 +44,6 @@ module KenaitoConf
       @config = config
       @cache = Cache.new(config.cache_dir)
       @configs = {}
-      @secret = ''
-      @global_secret = ''
       @last_time = 0
       @handlers = []
       @started = false
@@ -147,8 +116,6 @@ module KenaitoConf
       data = JSON.parse(response.body)
       raise "server error: #{data['msg']}" if data['code'] && data['code'] != 0
 
-      @secret = data['kenaito.config.encrypt-secret'] if data['kenaito.config.encrypt-secret']
-      @global_secret = data['kenaito.config.global-encrypt-secret'] if data['kenaito.config.global-encrypt-secret']
       @last_time = data['latest.fetch.timestamp'].to_i if data['latest.fetch.timestamp']
 
       @cache.write(data)
@@ -180,7 +147,7 @@ module KenaitoConf
 
       changed = {}
       changed_data.each do |k, v|
-        changed[k] = try_decrypt(v)
+        changed[k] = v
       end
 
       @configs.merge!(changed)
@@ -191,14 +158,8 @@ module KenaitoConf
       data.each do |k, v|
         next if k.start_with?('kenaito.') || k == 'latest.fetch.timestamp'
         next unless v.is_a?(String)
-        @configs[k] = try_decrypt(v)
+        @configs[k] = v
       end
-    end
-
-    def try_decrypt(value)
-      decrypted = Crypto.decrypt_config(@secret, value)
-      decrypted = Crypto.decrypt_config(@global_secret, value) if decrypted == value && !@global_secret.empty?
-      decrypted
     end
   end
 end

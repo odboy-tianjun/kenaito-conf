@@ -133,6 +133,8 @@ func (s *ConfigParseService) resolvePlaceholders(result map[string]interface{}) 
 func (s *ConfigParseService) replacePlaceholder(data map[string]interface{}, value string) string {
 	result := value
 	maxIterations := 100
+	processedPlaceholders := make(map[string]bool)
+	
 	for i := 0; i < maxIterations; i++ {
 		start := strings.Index(result, "${")
 		if start < 0 {
@@ -154,6 +156,12 @@ func (s *ConfigParseService) replacePlaceholder(data map[string]interface{}, val
 			defaultVal = placeholder[idx+1:]
 		}
 
+		// 检测循环引用
+		if processedPlaceholders[refKey] {
+			// 已经处理过这个占位符，说明存在循环引用，保留原样
+			break
+		}
+
 		var replacement string
 		if v, ok := data[refKey]; ok {
 			replacement = fmt.Sprintf("%v", v)
@@ -163,6 +171,9 @@ func (s *ConfigParseService) replacePlaceholder(data map[string]interface{}, val
 			replacement = "${" + placeholder + "}"
 		}
 
+		// 标记已处理
+		processedPlaceholders[refKey] = true
+		
 		result = result[:start] + replacement + result[end+1:]
 	}
 	return result

@@ -1,7 +1,6 @@
 import { Config } from './config.js';
 import { Cache } from './cache.js';
 import { Listener } from './listener.js';
-import { decryptConfig } from './crypto.js';
 
 export class ConfigClient {
   constructor(config) {
@@ -9,8 +8,6 @@ export class ConfigClient {
     this.cache = new Cache(config.cacheDir);
     this.listener = new Listener();
     this.configs = {};
-    this.secret = '';
-    this.globalSecret = '';
     this.lastTime = 0;
     this.started = false;
     this.timer = null;
@@ -86,14 +83,6 @@ export class ConfigClient {
       throw new Error(`server error: ${data.msg || 'unknown'}`);
     }
 
-    const secret = data['kenaito.config.encrypt-secret'];
-    if (secret) {
-      this.secret = secret;
-    }
-    const globalSecret = data['kenaito.config.global-encrypt-secret'];
-    if (globalSecret) {
-      this.globalSecret = globalSecret;
-    }
     const ts = data['latest.fetch.timestamp'];
     if (ts) {
       this.lastTime = parseInt(ts, 10);
@@ -140,7 +129,7 @@ export class ConfigClient {
 
     const changed = {};
     for (const [k, v] of Object.entries(changedData)) {
-      changed[k] = this.tryDecrypt(v);
+      changed[k] = v;
     }
 
     Object.assign(this.configs, changed);
@@ -156,16 +145,8 @@ export class ConfigClient {
       if (typeof v !== 'string') {
         continue;
       }
-      this.configs[k] = this.tryDecrypt(v);
+      this.configs[k] = v;
     }
-  }
-
-  tryDecrypt(value) {
-    let decrypted = decryptConfig(this.secret, value);
-    if (decrypted === value && this.globalSecret) {
-      decrypted = decryptConfig(this.globalSecret, value);
-    }
-    return decrypted;
   }
 }
 

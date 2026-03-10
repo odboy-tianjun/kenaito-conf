@@ -13,13 +13,12 @@ import (
 )
 
 type ConfigHandler struct {
-	cryptoService *service.CryptoService
 	parseService  *service.ConfigParseService
 	permService   *service.PermissionService
 }
 
-func NewConfigHandler(crypto *service.CryptoService, parse *service.ConfigParseService, perm *service.PermissionService) *ConfigHandler {
-	return &ConfigHandler{cryptoService: crypto, parseService: parse, permService: perm}
+func NewConfigHandler(parse *service.ConfigParseService, perm *service.PermissionService) *ConfigHandler {
+	return &ConfigHandler{parseService: parse, permService: perm}
 }
 
 type ConfigListRequest struct {
@@ -162,9 +161,6 @@ func (h *ConfigHandler) Add(c *gin.Context) {
 		}
 	}
 
-	// encrypt sensitive values
-	h.encryptIfRequired(&config)
-
 	if _, err := dao.Engine.Insert(&config); err != nil {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 500, Msg: "保存失败"})
 		return
@@ -207,8 +203,6 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 	config.UpdatedBy = userInfo.Name
 	now := time.Now()
 	config.UpdatedAt = &now
-
-	h.encryptIfRequired(&config)
 
 	dao.Engine.ID(config.Id).Cols("contents", "version", "updated_by", "updated_at").Update(&config)
 
@@ -311,10 +305,4 @@ func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator string) {
 		CreatedBy: operator,
 	}
 	dao.Engine.Insert(&history)
-}
-
-func (h *ConfigHandler) encryptIfRequired(config *model.AppConfig) {
-	// simplified: check if contents contain sensitive keys
-	// In production, parse the config and encrypt values with {Cipher} prefix
-	// For now, skip encryption logic
 }

@@ -6,6 +6,7 @@ import (
 	"kenaito-conf/server/internal/model"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,6 +65,7 @@ func (h *ProfileHandler) Add(c *gin.Context) {
 		Alias:     req.Alias,
 		IsDefault: req.IsDefault,
 		Enabled:   true,
+		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
 	}
 
 	dao.Engine.Insert(&profile)
@@ -104,7 +106,9 @@ func (h *ProfileHandler) Update(c *gin.Context) {
 	}
 
 	profile.Alias = req.Alias
-	dao.Engine.ID(profile.Id).Update(&profile)
+	now := time.Now()
+	profile.UpdatedAt = &now
+	dao.Engine.ID(profile.Id).Cols("alias", "is_default", "updated_at").Update(&profile)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: true})
 }

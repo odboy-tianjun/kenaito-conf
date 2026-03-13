@@ -27,7 +27,7 @@ func (h *UserHandler) List(c *gin.Context) {
 	userInfo := middleware.GetUserInfo(c)
 
 	var users []model.User
-	query := dao.Engine.Where("1=1")
+	query := dao.Engine.Where("enabled = 1")
 
 	if !userInfo.IsSuperAdmin() && userInfo.GroupId != nil {
 		query = query.And("group_id = ?", *userInfo.GroupId)
@@ -84,13 +84,13 @@ func (h *UserHandler) Add(c *gin.Context) {
 		return
 	}
 
-	// check name exists
+	// check name exists - only check active users (enabled = 1)
 	var existing model.User
-	if has, _ := dao.Engine.Where("name = ?", req.Name).Get(&existing); has {
+	if has, _ := dao.Engine.Where("name = ? AND enabled = 1", req.Name).Get(&existing); has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 1001, Msg: "用户名已存在"})
 		return
 	}
-	if has, _ := dao.Engine.Where("mobile = ?", req.Mobile).Get(&existing); has {
+	if has, _ := dao.Engine.Where("mobile = ? AND enabled = 1", req.Mobile).Get(&existing); has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 1001, Msg: "手机号已存在"})
 		return
 	}
@@ -150,7 +150,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 	userId, _ := strconv.Atoi(userInfo.Id)
 
 	var user model.User
-	has, _ := dao.Engine.ID(userId).Get(&user)
+	has, _ := dao.Engine.Where("id = ? AND enabled = 1", userId).Get(&user)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "用户不存在"})
 		return
@@ -203,7 +203,7 @@ func (h *UserHandler) AdminUpdate(c *gin.Context) {
 	}
 
 	var user model.User
-	has, _ := dao.Engine.ID(req.Id).Get(&user)
+	has, _ := dao.Engine.Where("id = ? AND enabled = 1", req.Id).Get(&user)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "用户不存在"})
 		return
@@ -264,7 +264,7 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	userInfo := middleware.GetUserInfo(c)
 
 	var user model.User
-	has, _ := dao.Engine.ID(id).Get(&user)
+	has, _ := dao.Engine.Where("id = ? AND enabled = 1", id).Get(&user)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "用户不存在"})
 		return
@@ -275,7 +275,10 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	dao.Engine.ID(id).Delete(&model.User{})
+	user.Enabled = false
+	now := time.Now()
+	user.UpdatedAt = &now
+	dao.Engine.ID(user.Id).Cols("enabled", "updated_at").Update(&user)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0})
 }
@@ -283,7 +286,7 @@ func (h *UserHandler) Delete(c *gin.Context) {
 func (h *UserHandler) ResetPassword(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var user model.User
-	has, _ := dao.Engine.ID(id).Get(&user)
+	has, _ := dao.Engine.Where("id = ? AND enabled = 1", id).Get(&user)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "用户不存在"})
 		return
@@ -302,7 +305,7 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 func (h *UserHandler) Switch(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var user model.User
-	has, _ := dao.Engine.ID(id).Get(&user)
+	has, _ := dao.Engine.Where("id = ? AND enabled = 1", id).Get(&user)
 	if !has {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "用户不存在"})
 		return

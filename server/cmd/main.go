@@ -67,7 +67,6 @@ func main() {
 
 		// app management
 		admin.POST("/app/list", appHandler.List)
-		admin.GET("/app/tree", appHandler.Tree)
 		admin.GET("/app/:id", appHandler.GetById)
 		admin.POST("/app/add", appHandler.Add)
 		admin.POST("/app/update", appHandler.Update)

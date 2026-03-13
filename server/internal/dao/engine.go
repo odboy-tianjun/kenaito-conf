@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"fmt"
 	"kenaito-conf/server/internal/config"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/util"
@@ -14,9 +13,7 @@ import (
 var Engine *xorm.Engine
 
 func Init() error {
-	cfg := config.Cfg.Database
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true&loc=Local",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
+	dsn := config.Cfg.Database.DSN()
 
 	var err error
 	Engine, err = xorm.NewEngine("mysql", dsn)

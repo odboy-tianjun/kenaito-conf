@@ -8,13 +8,6 @@ export function getAppList(params) {
   })
 }
 
-export function getAppTree() {
-  return request({
-    url: '/admin/app/tree',
-    method: 'get'
-  })
-}
-
 export function getApp(id) {
   return request({
     url: `/admin/app/${id}`,

@@ -137,5 +137,5 @@ func intProp(props map[string]string, key string, defaultVal int) int {
 }
 
 func (d *DatabaseConfig) DSN() string {
-	return d.User + ":" + d.Password + "@tcp(" + d.Host + ":" + strconv.Itoa(d.Port) + ")/" + d.Name + "?charset=utf8&parseTime=true"
+	return d.User + ":" + d.Password + "@tcp(" + d.Host + ":" + strconv.Itoa(d.Port) + ")/" + d.Name + "?charset=utf8&parseTime=true&loc=Local"
 }

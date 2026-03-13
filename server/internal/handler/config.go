@@ -45,10 +45,7 @@ func (h *ConfigHandler) List(c *gin.Context) {
 		if *req.AppId <= 0 {
 			query = query.And("(app_id is null OR app_id = 0)")
 		} else {
-			var app model.Application
-			if has, _ := dao.Engine.ID(*req.AppId).Get(&app); has {
-				query = query.And("app_code like ?", app.Code+"%")
-			}
+			query = query.And("app_id = ?", *req.AppId)
 		}
 	}
 

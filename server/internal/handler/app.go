@@ -48,7 +48,7 @@ func (h *AppHandler) List(c *gin.Context) {
 	total, _ := query.Count(&model.Application{})
 	query.Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&apps)
 
-	// load group names
+	// load group names - batch query to avoid N+1
 	groupIds := make(map[int]bool)
 	for _, app := range apps {
 		if app.GroupId != nil {
@@ -56,10 +56,15 @@ func (h *AppHandler) List(c *gin.Context) {
 		}
 	}
 	groupMap := make(map[int]string)
-	for gid := range groupIds {
-		var group model.BusinessGroup
-		if has, _ := dao.Engine.ID(gid).Get(&group); has {
-			groupMap[gid] = group.Name
+	if len(groupIds) > 0 {
+		ids := make([]int, 0, len(groupIds))
+		for gid := range groupIds {
+			ids = append(ids, gid)
+		}
+		var groups []model.BusinessGroup
+		dao.Engine.In("id", ids).Find(&groups)
+		for _, g := range groups {
+			groupMap[g.Id] = g.Name
 		}
 	}
 	for i := range apps {
@@ -80,38 +85,6 @@ func (h *AppHandler) GetById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: app})
-}
-
-func (h *AppHandler) Tree(c *gin.Context) {
-	var apps []model.Application
-	dao.Engine.Find(&apps)
-
-	tree := make(map[string]*AppTreeModel)
-	for _, app := range apps {
-		node := &AppTreeModel{
-			Id:        strconv.Itoa(app.Id),
-			Name:      app.Name,
-			Code:      app.Code,
-			ServiceId: app.ServiceId,
-			Children:  make([]*AppTreeModel, 0),
-		}
-		tree[strconv.Itoa(app.Id)] = node
-	}
-
-	result := make([]*AppTreeModel, 0)
-	for _, app := range apps {
-		node := tree[strconv.Itoa(app.Id)]
-		if app.ParentId == nil {
-			result = append(result, node)
-		} else {
-			parentId := strconv.Itoa(*app.ParentId)
-			if parent, ok := tree[parentId]; ok {
-				parent.Children = append(parent.Children, node)
-			}
-		}
-	}
-
-	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: result})
 }
 
 type AddAppRequest struct {
@@ -293,14 +266,6 @@ func (h *AppHandler) Options(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: options})
-}
-
-type AppTreeModel struct {
-	Id        string          `json:"id"`
-	Name      string          `json:"name"`
-	Code      string          `json:"code"`
-	ServiceId string          `json:"serviceId,omitempty"`
-	Children  []*AppTreeModel `json:"children"`
 }
 
 func (h *AppHandler) GenerateToken(c *gin.Context) {

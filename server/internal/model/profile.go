@@ -1,11 +1,15 @@
 package model
 
+import "time"
+
 type Profile struct {
-	Id        int    `xorm:"int autoincr pk" json:"id"`
-	Name      string `xorm:"varchar(32)" json:"name"`
-	Alias     string `xorm:"varchar(32)" json:"alias"`
-	IsDefault bool   `xorm:"tinyint(1) default 0" json:"isDefault"`
-	Enabled   bool   `xorm:"tinyint(1) default 1" json:"enabled"`
+	Id        int        `xorm:"int autoincr pk" json:"id"`
+	Name      string     `xorm:"varchar(32)" json:"name"`
+	Alias     string     `xorm:"varchar(32)" json:"alias"`
+	IsDefault bool       `xorm:"tinyint(1) default 0" json:"isDefault"`
+	Enabled   bool       `xorm:"tinyint(1) default 1" json:"enabled"`
+	CreatedAt *time.Time `xorm:"datetime" json:"createdAt"`
+	UpdatedAt *time.Time `xorm:"datetime" json:"updatedAt"`
 }
 
 type AppExtrAttr struct {

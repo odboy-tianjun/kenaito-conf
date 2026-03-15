@@ -124,6 +124,30 @@ func (h *GroupHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0})
 }
 
+func (h *GroupHandler) Switch(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	userInfo := middleware.GetUserInfo(c)
+	if !userInfo.IsSuperAdmin() {
+		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "超级管理员才能操作"})
+		return
+	}
+
+	var group model.BusinessGroup
+	has, _ := dao.Engine.ID(id).Get(&group)
+	if !has {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "业务组不存在"})
+		return
+	}
+
+	group.Enabled = !group.Enabled
+	now := time.Now()
+	group.UpdatedAt = &now
+	group.UpdatedBy = userInfo.Name
+	dao.Engine.ID(group.Id).Cols("enabled", "updated_at", "updated_by").Update(&group)
+
+	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: true})
+}
+
 func (h *GroupHandler) Options(c *gin.Context) {
 	var groups []model.BusinessGroup
 	dao.Engine.Where("enabled = 1").Find(&groups)

@@ -53,6 +53,16 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		return
 	}
 
+	// check if app's group is enabled
+	if app.GroupId != nil {
+		var group model.BusinessGroup
+		has, _ := dao.Engine.ID(*app.GroupId).Get(&group)
+		if !has || !group.Enabled {
+			c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "业务组已禁用"})
+			return
+		}
+	}
+
 	// validate token if app has token configured
 	if app.Token != "" && app.Token != req.Token {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "Token 无效"})

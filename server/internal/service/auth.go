@@ -31,6 +31,15 @@ func (s *AuthService) Login(userName, password string) (string, *model.LoginUser
 		return "", nil, errors.New("用户不存在或已禁用")
 	}
 
+	// 检查业务组是否启用
+	if user.GroupId != nil {
+		var group model.BusinessGroup
+		has, _ := dao.Engine.ID(*user.GroupId).Get(&group)
+		if !has || !group.Enabled {
+			return "", nil, errors.New("所属业务组已禁用")
+		}
+	}
+
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return "", nil, errors.New("密码错误")
 	}
@@ -91,6 +100,15 @@ func (s *AuthService) ValidateToken(tokenString string) (*model.LoginUserInfo, e
 	// 检查用户是否已被禁用
 	if !user.Enabled {
 		return nil, errors.New("user is disabled")
+	}
+
+	// 检查业务组是否启用
+	if user.GroupId != nil {
+		var group model.BusinessGroup
+		has, _ := dao.Engine.ID(*user.GroupId).Get(&group)
+		if !has || !group.Enabled {
+			return nil, errors.New("group is disabled")
+		}
 	}
 
 	// 检查 token 是否在登出后签发

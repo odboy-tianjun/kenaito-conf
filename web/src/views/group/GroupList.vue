@@ -9,9 +9,9 @@
       <el-table-column prop="name" label="组名称"></el-table-column>
       <el-table-column prop="master" label="负责人"></el-table-column>
       <el-table-column prop="remarks" label="备注"></el-table-column>
-      <el-table-column prop="enabled" label="状态" width="80">
+      <el-table-column prop="enabled" label="状态" width="100">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.enabled ? 'success' : 'info'">{{ scope.row.enabled ? '启用' : '禁用' }}</el-tag>
+          <el-switch v-model="scope.row.enabled" @change="handleSwitch(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="100">
@@ -80,6 +80,13 @@ export default {
         const res = await request({ url: '/admin/user/options', method: 'get' })
         this.users = res.data || []
       } catch (e) {}
+    },
+    async handleSwitch(row) {
+      try {
+        await request({ url: `/admin/group/switch/${row.id}`, method: 'post' })
+      } catch (e) {
+        row.enabled = !row.enabled
+      }
     },
     showAdd() {
       this.dialogTitle = '新建业务组'

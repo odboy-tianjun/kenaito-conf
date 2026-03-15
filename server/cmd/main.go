@@ -90,6 +90,7 @@ func main() {
 		admin.GET("/group/get/:id", groupHandler.GetById)
 		admin.POST("/group/add", groupHandler.Add)
 		admin.POST("/group/update", groupHandler.Update)
+		admin.POST("/group/switch/:id", groupHandler.Switch)
 		admin.GET("/group/options", groupHandler.Options)
 
 		// profile management

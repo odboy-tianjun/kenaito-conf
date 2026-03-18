@@ -3,8 +3,11 @@
     <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
       <span>配置列表</span>
       <div>
-        <el-select v-model="query.env" placeholder="环境" clearable style="width: 120px; margin-right: 10px" @change="loadData">
+        <el-select v-model="query.env" placeholder="环境" clearable style="width: 160px; margin-right: 10px" @change="loadData">
           <el-option v-for="p in profiles" :key="p.value" :label="p.label" :value="p.value"></el-option>
+        </el-select>
+        <el-select v-model="query.appId" placeholder="应用" clearable filterable style="width: 200px; margin-right: 10px" @change="loadData">
+          <el-option v-for="app in apps" :key="app.value" :label="app.label" :value="app.value"></el-option>
         </el-select>
         <el-button type="primary" @click="$router.push('/config/add')">新建配置</el-button>
       </div>
@@ -192,8 +195,9 @@ export default {
       list: [],
       loading: false,
       total: 0,
-      query: { pageNo: 1, pageSize: 20, env: '' },
+      query: { pageNo: 1, pageSize: 20, env: '', appId: null },
       profiles: [],
+      apps: [],
       historyVisible: false,
       historyList: [],
       currentConfig: null,
@@ -206,12 +210,23 @@ export default {
   created() {
     this.loadData()
     this.loadProfiles()
+    this.loadApps()
   },
   methods: {
     async loadData() {
       this.loading = true
       try {
-        const res = await getConfigList(this.query)
+        const params = {
+          pageNo: this.query.pageNo,
+          pageSize: this.query.pageSize
+        }
+        if (this.query.env) {
+          params.env = this.query.env
+        }
+        if (this.query.appId) {
+          params.appId = this.query.appId
+        }
+        const res = await getConfigList(params)
         this.list = res.data || []
         this.total = res.total || 0
       } finally {
@@ -222,6 +237,12 @@ export default {
       try {
         const res = await request({ url: '/admin/profile/options', method: 'get' })
         this.profiles = res.data || []
+      } catch (e) {}
+    },
+    async loadApps() {
+      try {
+        const res = await request({ url: '/admin/app/options', method: 'get' })
+        this.apps = res.data || []
       } catch (e) {}
     },
     handlePageChange(page) {

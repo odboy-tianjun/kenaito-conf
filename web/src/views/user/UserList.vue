@@ -2,7 +2,22 @@
   <el-card>
     <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
       <span>用户管理</span>
-      <el-button type="primary" @click="showAdd">新建用户</el-button>
+      <div>
+        <el-input v-model="query.name" placeholder="用户名" clearable style="width: 140px; margin-right: 10px" @clear="loadData" @keyup.enter.native="loadData"></el-input>
+        <el-select v-model="query.type" placeholder="类型" clearable style="width: 120px; margin-right: 10px" @change="loadData">
+          <el-option value="user" label="普通用户"></el-option>
+          <el-option value="groupAdmin" label="组管理员"></el-option>
+          <el-option value="superAdmin" label="超级管理员"></el-option>
+        </el-select>
+        <el-select v-model="query.groupId" placeholder="所属组" clearable filterable style="width: 160px; margin-right: 10px" @change="loadData">
+          <el-option v-for="g in groups" :key="g.value" :label="g.label" :value="g.value"></el-option>
+        </el-select>
+        <el-select v-model="query.enabled" placeholder="状态" clearable style="width: 100px; margin-right: 10px" @change="loadData">
+          <el-option :value="1" label="启用"></el-option>
+          <el-option :value="0" label="禁用"></el-option>
+        </el-select>
+        <el-button type="primary" @click="showAdd">新建用户</el-button>
+      </div>
     </div>
     <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
@@ -73,6 +88,13 @@ export default {
     return {
       list: [],
       loading: false,
+      query: {
+        name: '',
+        type: '',
+        groupId: '',
+        enabled: ''
+      },
+      groups: [],
       dialogVisible: false,
       dialogTitle: '',
       form: {},
@@ -85,16 +107,28 @@ export default {
   },
   created() {
     this.loadData()
+    this.loadGroups()
   },
   methods: {
     async loadData() {
       this.loading = true
       try {
-        const res = await request({ url: '/admin/user/list', method: 'get' })
+        const params = {}
+        if (this.query.name) params.name = this.query.name
+        if (this.query.type) params.type = this.query.type
+        if (this.query.groupId) params.groupId = this.query.groupId
+        if (this.query.enabled !== '') params.enabled = this.query.enabled
+        const res = await request({ url: '/admin/user/list', method: 'get', params })
         this.list = res.data || []
       } finally {
         this.loading = false
       }
+    },
+    async loadGroups() {
+      try {
+        const res = await request({ url: '/admin/group/options', method: 'get' })
+        this.groups = res.data || []
+      } catch (e) {}
     },
     showAdd() {
       this.dialogTitle = '新建用户'

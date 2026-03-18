@@ -45,8 +45,21 @@ func (h *AppHandler) List(c *gin.Context) {
 	}
 
 	var apps []model.Application
-	total, _ := query.Count(&model.Application{})
-	query.Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&apps)
+	whereClause := "enabled = 1"
+	if !userInfo.IsSuperAdmin() {
+		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
+			whereClause += " AND group_id = " + strconv.Itoa(*userInfo.GroupId)
+		} else {
+			userId, _ := strconv.Atoi(userInfo.Id)
+			whereClause += " AND (owner_id = " + strconv.Itoa(userId) + " OR id IN (SELECT app_id FROM user_permissions WHERE user_id = " + strconv.Itoa(userId) + "))"
+		}
+	}
+	if req.AppType != "" {
+		whereClause += " AND service_id = '" + req.AppType + "'"
+	}
+	
+	total, _ := dao.Engine.Where(whereClause).Count(&model.Application{})
+	dao.Engine.Where(whereClause).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&apps)
 
 	// load group names - batch query to avoid N+1
 	groupIds := make(map[int]bool)

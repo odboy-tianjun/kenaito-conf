@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,20 +25,35 @@ func NewUserHandler(perm *service.PermissionService) *UserHandler {
 
 func (h *UserHandler) List(c *gin.Context) {
 	groupIdStr := c.Query("groupId")
+	name := c.Query("name")
+	userType := c.Query("type")
+	enabledStr := c.Query("enabled")
 	userInfo := middleware.GetUserInfo(c)
 
+	buildConditions := func() []string {
+		conditions := []string{"1=1"}
+		if !userInfo.IsSuperAdmin() && userInfo.GroupId != nil {
+			conditions = append(conditions, "group_id = "+strconv.Itoa(*userInfo.GroupId))
+		}
+		if groupIdStr != "" {
+			conditions = append(conditions, "group_id = "+groupIdStr)
+		}
+		if name != "" {
+			conditions = append(conditions, "name like '%"+name+"%'")
+		}
+		if userType != "" {
+			conditions = append(conditions, "type = '"+userType+"'")
+		}
+		if enabledStr != "" {
+			conditions = append(conditions, "enabled = "+enabledStr)
+		}
+		return conditions
+	}
+
+	whereClause := strings.Join(buildConditions(), " AND ")
+
 	var users []model.User
-	query := dao.Engine.Where("enabled = 1")
-
-	if !userInfo.IsSuperAdmin() && userInfo.GroupId != nil {
-		query = query.And("group_id = ?", *userInfo.GroupId)
-	}
-	if groupIdStr != "" {
-		groupId, _ := strconv.Atoi(groupIdStr)
-		query = query.And("group_id = ?", groupId)
-	}
-
-	query.Find(&users)
+	dao.Engine.Where(whereClause).Find(&users)
 
 	// load group names
 	var groups []model.BusinessGroup

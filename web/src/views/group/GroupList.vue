@@ -2,9 +2,14 @@
   <el-card>
     <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
       <span>业务组管理</span>
-      <el-button type="primary" @click="showAdd">新建业务组</el-button>
+      <div>
+        <el-select v-model="filterName" placeholder="组名称" clearable filterable style="width: 200px; margin-right: 10px">
+          <el-option v-for="g in groupOptions" :key="g" :label="g" :value="g"></el-option>
+        </el-select>
+        <el-button type="primary" @click="showAdd">新建业务组</el-button>
+      </div>
     </div>
-    <el-table :data="list" v-loading="loading" border stripe>
+    <el-table :data="filteredList" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="组名称"></el-table-column>
       <el-table-column prop="master" label="负责人"></el-table-column>
@@ -51,6 +56,7 @@ export default {
     return {
       list: [],
       loading: false,
+      filterName: '',
       dialogVisible: false,
       dialogTitle: '',
       form: {},
@@ -59,6 +65,15 @@ export default {
         masterUid: [{ required: true, message: '请选择负责人', trigger: 'change' }]
       },
       users: []
+    }
+  },
+  computed: {
+    groupOptions() {
+      return [...new Set(this.list.map(g => g.name))].filter(name => name && name.trim())
+    },
+    filteredList() {
+      if (!this.filterName) return this.list
+      return this.list.filter(g => g.name === this.filterName)
     }
   },
   created() {

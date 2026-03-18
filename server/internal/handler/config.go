@@ -7,6 +7,7 @@ import (
 	"kenaito-conf/server/internal/service"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -36,34 +37,48 @@ func (h *ConfigHandler) List(c *gin.Context) {
 	}
 
 	userInfo := middleware.GetUserInfo(c)
-	query := dao.Engine.Where("enabled = 1")
 
-	if req.Env != "" {
-		query = query.And("env = ?", req.Env)
-	}
-	if req.AppId != nil {
-		if *req.AppId <= 0 {
-			query = query.And("(app_id is null OR app_id = 0)")
-		} else {
-			query = query.And("app_id = ?", *req.AppId)
-		}
-	}
-
-	// permission filter
+	// 检查权限
 	if !userInfo.IsSuperAdmin() {
-		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
-			query = query.And("group_id = ?", *userInfo.GroupId)
-		} else if len(userInfo.GrantAppIds) > 0 {
-			query = query.In("app_id", userInfo.GrantAppIds)
-		} else {
+		if !userInfo.IsGroupAdmin() && len(userInfo.GrantAppIds) == 0 {
 			c.JSON(http.StatusOK, model.PageResult{PageNo: req.PageNo, PageSize: req.PageSize, Total: 0, Data: []interface{}{}})
 			return
 		}
 	}
 
+	// 构建查询条件
+	buildConditions := func() []string {
+		conditions := []string{"enabled = 1"}
+		if req.Env != "" {
+			conditions = append(conditions, "env = '"+req.Env+"'")
+		}
+		if req.AppId != nil {
+			if *req.AppId <= 0 {
+				conditions = append(conditions, "(app_id is null OR app_id = 0)")
+			} else {
+				conditions = append(conditions, "app_id = "+strconv.Itoa(*req.AppId))
+			}
+		}
+		if !userInfo.IsSuperAdmin() {
+			if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
+				conditions = append(conditions, "group_id = "+strconv.Itoa(*userInfo.GroupId))
+			} else if len(userInfo.GrantAppIds) > 0 {
+				ids := make([]string, len(userInfo.GrantAppIds))
+				for i, id := range userInfo.GrantAppIds {
+					ids[i] = strconv.Itoa(id)
+				}
+				conditions = append(conditions, "app_id in ("+strings.Join(ids, ",")+")")
+			}
+		}
+		return conditions
+	}
+
+	conditions := buildConditions()
+	whereClause := strings.Join(conditions, " AND ")
+
 	var configs []model.AppConfig
-	total, _ := query.Count(&model.AppConfig{})
-	query.Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&configs)
+	total, _ := dao.Engine.Where(whereClause).Count(&model.AppConfig{})
+	dao.Engine.Where(whereClause).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&configs)
 
 	// build app names
 	for i := range configs {

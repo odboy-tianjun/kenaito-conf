@@ -14,16 +14,16 @@
 kenaito-conf/
 ├── server/                              # Go 管理端（Gin + xorm）
 ├── web/                                 # Vue 2 前端
-├── kenaito-conf-go-client/              # Go 客户端 SDK
-├── kenaito-conf-go-client-demo/         # Go 客户端示例
-├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x 客户端 SDK（JDK 8+）
-├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x 客户端示例（端口 8081）
-├── kenaito-conf-springboot3-client/     # Java Spring Boot 3 客户端 SDK（JDK 11+，预留升级路径）
-├── kenaito-conf-springboot3-client-demo/# Spring Boot 3 客户端示例（端口 8082，需 JDK 17+）
-├── kenaito-conf-python-client/          # Python 客户端 SDK（Python 3.10+）
-├── kenaito-conf-python-client-demo/     # Python 客户端示例（端口 8082）
-├── kenaito-conf-nodejs-client/          # Node.js 客户端 SDK（Node.js 18+）
-├── kenaito-conf-nodejs-client-demo/     # Node.js 客户端示例（端口 8083）
+├── kenaito-conf-go-client/              # （测试通过）Go 客户端 SDK
+├── kenaito-conf-go-client-demo/         # （测试通过）Go 客户端示例
+├── kenaito-conf-springboot2-client/     # （待测试）Java Spring Boot 2.x 客户端 SDK（JDK 8+）
+├── kenaito-conf-springboot2-client-demo/# （待测试）Spring Boot 2.x 客户端示例（端口 8081）
+├── kenaito-conf-springboot3-client/     # （待测试）Java Spring Boot 3 客户端 SDK（JDK 11+，预留升级路径）
+├── kenaito-conf-springboot3-client-demo/# （待测试）Spring Boot 3 客户端示例（端口 8082，需 JDK 17+）
+├── kenaito-conf-python-client/          # （待测试）Python 客户端 SDK（Python 3.10+）
+├── kenaito-conf-python-client-demo/     # （待测试）Python 客户端示例（端口 8082）
+├── kenaito-conf-nodejs-client/          # （待测试）Node.js 客户端 SDK（Node.js 18+）
+├── kenaito-conf-nodejs-client-demo/     # （待测试）Node.js 客户端示例（端口 8083）
 ├── kenaito-conf-php-client/             # （待测试）PHP 客户端 SDK（PHP 8.0+）
 ├── kenaito-conf-php-client-demo/        # （待测试）PHP 客户端示例
 ├── kenaito-conf-dotnet-client/          # （待测试）.NET 客户端 SDK（.NET 6.0+）

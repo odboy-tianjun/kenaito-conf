@@ -16,7 +16,7 @@ fun main() {
         env = System.getenv("KENAITO_PROFILE") ?: "daily",
         version = System.getenv("KENAITO_VERSION") ?: "latest",
         token = System.getenv("KENAITO_TOKEN") ?: "",
-        syncInterval = (System.getenv("KENAITO_SYNC_INTERVAL") ?: "30").toInt(),
+        syncInterval = (System.getenv("KENAITO_SYNC_INTERVAL") ?: "10").toInt(),
         cacheDir = System.getenv("KENAITO_CACHE_DIR") ?: ".",
     )
 

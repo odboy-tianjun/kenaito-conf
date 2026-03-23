@@ -4,18 +4,8 @@ import java.io.FileReader;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.Cipher;
@@ -411,7 +401,7 @@ public class ConfigcenterContext {
 		System.out.println("==================final config list start==================");
 		for (String key : sortKeys) {
 			String value = hideSensitive(key, properties.getProperty(key));
-			System.out.println(String.format("%s = %s", key, value));
+			System.out.printf("%s = %s%n", key, value);
 		}
 		System.out.println("==================final config list end====================");
 	}
@@ -471,6 +461,46 @@ public class ConfigcenterContext {
 					logger.warn("invoke {}.onConfigChanged error, msg:{}", handler.getClass().getName(), e.getMessage());
 				}
 			}
+
+			// Refresh @Value and @ConfigurationProperties fields
+			logger.info("[RefreshScope] Calling refreshDynamicConfigFields()...");
+			refreshDynamicConfigFields();
+			logger.info("[RefreshScope] refreshDynamicConfigFields() completed");
+		}
+	}
+
+	private void refreshDynamicConfigFields() {
+		if (applicationContext != null) {
+			try {
+				logger.info("[RefreshScope] Starting dynamic config field refresh...");
+				StandardEnvironment env = (StandardEnvironment) applicationContext.getEnvironment();
+				// 直接创建 RefreshScopeRegistry 并注册为 BeanPostProcessor
+				RefreshScopeRegistry registry = new RefreshScopeRegistry(env);
+				
+				// 遍历所有已注册的 Bean，记录 @Value 和 @ConfigurationProperties 字段
+				String[] beanNames = applicationContext.getBeanDefinitionNames();
+				logger.info("[RefreshScope] Found {} beans in ApplicationContext", beanNames.length);
+				
+				int valueFieldCount = 0;
+				int configPropsCount = 0;
+				for (String beanName : beanNames) {
+					Object bean = applicationContext.getBean(beanName);
+					registry.postProcessAfterInitialization(bean, beanName);
+				}
+				
+				valueFieldCount = registry.getValueFieldCount();
+				configPropsCount = registry.getConfigPropsCount();
+				logger.info("[RefreshScope] Recorded {} @Value fields and {} @ConfigurationProperties beans", valueFieldCount, configPropsCount);
+				
+				// 刷新
+				registry.refresh();
+				logger.info("[RefreshScope] RefreshScopeRegistry.refresh() completed, refreshed {} @Value fields and {} @ConfigurationProperties beans", 
+					registry.getValueFieldCount(), registry.getConfigPropsCount());
+			} catch (Exception e) {
+				logger.warn("[RefreshScope] RefreshScopeRegistry.refresh() error, msg:{}", e.getMessage(), e);
+			}
+		} else {
+			logger.warn("[RefreshScope] ApplicationContext is null, cannot refresh dynamic config fields");
 		}
 	}
 

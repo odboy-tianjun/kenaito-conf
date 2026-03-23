@@ -18,7 +18,7 @@ var config = new Config
     Env = Environment.GetEnvironmentVariable("KENAITO_PROFILE") ?? "daily",
     Version = Environment.GetEnvironmentVariable("KENAITO_VERSION") ?? "latest",
     Token = Environment.GetEnvironmentVariable("KENAITO_TOKEN") ?? "",
-    SyncInterval = int.Parse(Environment.GetEnvironmentVariable("KENAITO_SYNC_INTERVAL") ?? "30"),
+    SyncInterval = int.Parse(Environment.GetEnvironmentVariable("KENAITO_SYNC_INTERVAL") ?? "10"),
     CacheDir = Environment.GetEnvironmentVariable("KENAITO_CACHE_DIR") ?? ".",
 };
 

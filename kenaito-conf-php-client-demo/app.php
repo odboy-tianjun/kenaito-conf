@@ -19,7 +19,7 @@ $config = new Config([
     'env' => getenv('KENAITO_PROFILE') ?: 'daily',
     'version' => getenv('KENAITO_VERSION') ?: 'latest',
     'token' => getenv('KENAITO_TOKEN') ?: '',
-    'syncInterval' => (int)(getenv('KENAITO_SYNC_INTERVAL') ?: 30),
+    'syncInterval' => (int)(getenv('KENAITO_SYNC_INTERVAL') ?: 10),
     'cacheDir' => getenv('KENAITO_CACHE_DIR') ?: '.',
 ]);
 

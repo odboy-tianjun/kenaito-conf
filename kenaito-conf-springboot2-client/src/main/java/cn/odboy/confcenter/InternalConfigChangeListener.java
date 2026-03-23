@@ -40,14 +40,14 @@ public class InternalConfigChangeListener {
 		hbScheduledExecutor = Executors.newScheduledThreadPool(1);
 
 		final String url = context.getApiBaseUrls()[0] + "/api/fetchChangedConfigs";
-		final Map<String, String> params = new HashMap<>();
+		final Map<String, Object> params = new HashMap<>();
 		params.put("version", context.getVersion());
 		params.put("appName", context.getApp());
 		params.put("env", context.getEnv());
 		if (context.isIgnoreGlobal()) {
 			params.put("ignoreGlobal", String.valueOf(context.isIgnoreGlobal()));
 		}
-		params.put("lastTime", ConfigcenterContext.getProperty(LATEST_FETCH_TIMESTAMP, String.valueOf(System.currentTimeMillis())));
+		params.put("lastTime", Long.parseLong(ConfigcenterContext.getProperty(LATEST_FETCH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))));
 
 		hbScheduledExecutor.scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -61,7 +61,7 @@ public class InternalConfigChangeListener {
 							@SuppressWarnings("unchecked")
 							Map<String, Object> data = (Map<String, Object>) map.get("data");
 							if (data.containsKey(LATEST_FETCH_TIMESTAMP)) {
-								params.put("lastTime", data.remove(LATEST_FETCH_TIMESTAMP).toString());
+								params.put("lastTime", Long.parseLong(data.remove(LATEST_FETCH_TIMESTAMP).toString()));
 							}
 							if (!data.isEmpty()) context.updateConfig(data);
 						}

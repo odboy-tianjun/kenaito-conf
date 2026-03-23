@@ -14,7 +14,7 @@ local config = {
     env = os.getenv("KENAITO_PROFILE") or "daily",
     version = os.getenv("KENAITO_VERSION") or "latest",
     token = os.getenv("KENAITO_TOKEN") or "",
-    syncInterval = tonumber(os.getenv("KENAITO_SYNC_INTERVAL") or "30"),
+    syncInterval = tonumber(os.getenv("KENAITO_SYNC_INTERVAL") or "10"),
     cacheDir = os.getenv("KENAITO_CACHE_DIR") or ".",
 }
 

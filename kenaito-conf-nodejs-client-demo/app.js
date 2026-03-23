@@ -27,7 +27,7 @@ async function createClient() {
     env: process.env.KENAITO_PROFILE || 'daily',
     version: process.env.KENAITO_VERSION || 'latest',
     token: process.env.KENAITO_TOKEN || '',
-    syncInterval: parseInt(process.env.KENAITO_SYNC_INTERVAL || '30', 10),
+    syncInterval: parseInt(process.env.KENAITO_SYNC_INTERVAL || '10', 10),
     cacheDir: process.env.KENAITO_CACHE_DIR || '.',
   });
   const c = new ConfigClient(cfg);

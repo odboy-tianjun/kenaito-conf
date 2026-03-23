@@ -36,7 +36,7 @@
         <dependency>
             <groupId>cn.odboy</groupId>
             <artifactId>kenaito-conf-springboot2-client</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.3</version>
         </dependency>
     </dependencies>
 

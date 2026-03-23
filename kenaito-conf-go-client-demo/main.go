@@ -17,7 +17,7 @@ func main() {
 		Env:     "daily",
 		Version: "latest",
 		//Token:        "6f6966fe196572954b176c0e2a97bc399b050c6be31454b8d6b0f7f622b5d6f1",
-		SyncInterval: 30, // sync every 30 seconds
+		SyncInterval: 10, // sync every 10 seconds
 		CacheDir:     ".",
 	}
 

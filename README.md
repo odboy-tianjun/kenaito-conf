@@ -64,7 +64,6 @@ database.user=root
 database.password=your_password
 jwt.secret=your-jwt-secret
 jwt.expireHours=24
-crypto.secretKey=your-crypto-key
 ```
 
 启动服务（首次启动自动建表并初始化默认数据）：

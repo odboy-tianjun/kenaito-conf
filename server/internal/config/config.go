@@ -14,7 +14,6 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
-	Crypto   CryptoConfig
 }
 
 type ServerConfig struct {
@@ -33,10 +32,6 @@ type DatabaseConfig struct {
 type JWTConfig struct {
 	Secret      string
 	ExpireHours int
-}
-
-type CryptoConfig struct {
-	SecretKey string
 }
 
 var Cfg *Config
@@ -76,8 +71,6 @@ func Load(path string) error {
 
 	Cfg.JWT.Secret = baseProps["jwt.secret"]
 	Cfg.JWT.ExpireHours = intProp(baseProps, "jwt.expireHours", 24)
-
-	Cfg.Crypto.SecretKey = baseProps["crypto.secretKey"]
 
 	if Cfg.Database.Host == "" {
 		return fmt.Errorf("missing required config: database.host")

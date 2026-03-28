@@ -18,7 +18,7 @@ import cn.odboy.confcenter.ConfigcenterContext;
  * @version 2.0.0
  * @date 2026-10-11
  */
-public class CCPropertyPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer
+public class KenaitoPropertyPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer
 		implements DisposableBean, ApplicationContextAware {
 
 	private boolean setRemoteEnabled = false;

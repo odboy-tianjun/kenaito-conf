@@ -16,10 +16,8 @@ kenaito-conf/
 ├── web/                                 # Vue 2 前端
 ├── kenaito-conf-go-client/              # （测试通过）Go 客户端 SDK
 ├── kenaito-conf-go-client-demo/         # （测试通过）Go 客户端示例
-├── kenaito-conf-springboot2-client/     # （待测试）Java Spring Boot 2.x 客户端 SDK（JDK 8+）
-├── kenaito-conf-springboot2-client-demo/# （待测试）Spring Boot 2.x 客户端示例（端口 8081）
-├── kenaito-conf-springboot3-client/     # （待测试）Java Spring Boot 3 客户端 SDK（JDK 11+，预留升级路径）
-├── kenaito-conf-springboot3-client-demo/# （待测试）Spring Boot 3 客户端示例（端口 8082，需 JDK 17+）
+├── kenaito-conf-springboot2-client/     # （测试通过）Java Spring Boot 2.x 客户端 SDK（JDK 8+）
+├── kenaito-conf-springboot2-client-demo/# （测试通过）Spring Boot 2.x 客户端示例（端口 8081）
 ├── kenaito-conf-python-client/          # （待测试）Python 客户端 SDK（Python 3.10+）
 ├── kenaito-conf-python-client-demo/     # （待测试）Python 客户端示例（端口 8082）
 ├── kenaito-conf-nodejs-client/          # （待测试）Node.js 客户端 SDK（Node.js 18+）
@@ -129,39 +127,46 @@ dbHost := c.Get("db.host")
 
 ### Java Spring Boot 2.x 客户端
 
-适用于 JDK 8+、Spring Boot 2.x 项目。
+适用于 JDK 8+、Spring Boot 2.x 项目，支持配置自动刷新和 `@Value` 动态更新。
 
 **1. 引入依赖**
 
 ```xml
-
 <dependency>
     <groupId>cn.odboy</groupId>
     <artifactId>kenaito-conf-springboot2-client</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
 **2. 添加配置**（`application.properties`）
 
 ```properties
-kenaito.config.baseUrl=http://localhost:8080
-kenaito.config.appName=myapp
-kenaito.config.profile=dev
-kenaito.config.version=latest
-kenaito.config.token=app-token
-kenaito.config.sync-interval-seconds=30
+# 配置中心地址
+kenaito.configcenter.base-url=http://localhost:8080
+# 应用名称（必填）
+kenaito.configcenter.app-name=myapp
+# 环境（dev/daily/prod）
+kenaito.configcenter.env=daily
+# 配置版本
+kenaito.configcenter.version=latest
+# 认证令牌（可选）
+kenaito.configcenter.token=app-token
+# 同步间隔（秒）
+kenaito.configcenter.sync-interval=30
 ```
 
 **3. 使用配置**
 
 ```java
+@Value("${database.host:localhost}")
+private String databaseHost;
 
-@Value("${your.config.key}")
-private String configValue;
+@Value("${database.port:3306}")
+private Integer databasePort;
 ```
 
-远程配置会自动注入到 Spring Environment 中，通过 `@Value` 即可读取。
+配置变更时会自动刷新 `@Value` 字段，无需重启应用。详见 [Spring Boot 2 客户端文档](kenaito-conf-springboot2-client/README.md)。
 
 ### Java Spring Boot 3 客户端
 

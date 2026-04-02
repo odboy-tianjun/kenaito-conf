@@ -41,16 +41,16 @@ client.stop()
 
 ## 配置项
 
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `base_url` | 配置中心地址 | 必填 |
-| `app_name` | 应用名称 | 必填 |
-| `env` | 环境（dev/daily/prod） | `dev` |
-| `version` | 配置版本 | `latest` |
-| `token` | 认证令牌 | 空 |
-| `sync_interval` | 同步间隔（秒） | `60` |
-| `ignore_global` | 是否忽略全局配置 | `False` |
-| `cache_dir` | 本地缓存目录 | `.` |
+| 参数              | 说明                 | 默认值      |
+|-----------------|--------------------|----------|
+| `base_url`      | 配置中心地址             | 必填       |
+| `app_name`      | 应用名称               | 必填       |
+| `env`           | 环境（dev/daily/prod） | `dev`    |
+| `version`       | 配置版本               | `latest` |
+| `token`         | 认证令牌               | 空        |
+| `sync_interval` | 同步间隔（秒）            | `60`     |
+| `ignore_global` | 是否忽略全局配置           | `False`  |
+| `cache_dir`     | 本地缓存目录             | `.`      |
 
 ## Demo
 
@@ -64,13 +64,13 @@ Demo 默认监听 `8082` 端口，访问 `http://localhost:8082/` 查看配置�
 
 环境变量覆盖：
 
-| 环境变量 | 说明 | 默认值 |
-|----------|------|--------|
-| `SERVER_PORT` | 服务端口 | `8082` |
-| `KENAITO_BASE_URL` | 配置中心地址 | `http://localhost:8080` |
-| `KENAITO_APP_NAME` | 应用名称 | `kenaito-springboot-demo` |
-| `KENAITO_PROFILE` | 环境 | `daily` |
-| `KENAITO_VERSION` | 配置版本 | `latest` |
-| `KENAITO_TOKEN` | 认证令牌 | 空 |
-| `KENAITO_SYNC_INTERVAL` | 同步间隔（秒） | `30` |
-| `KENAITO_CACHE_DIR` | 缓存目录 | `.` |
+| 环境变量                    | 说明      | 默认值                       |
+|-------------------------|---------|---------------------------|
+| `SERVER_PORT`           | 服务端口    | `8082`                    |
+| `KENAITO_BASE_URL`      | 配置中心地址  | `http://localhost:8080`   |
+| `KENAITO_APP_NAME`      | 应用名称    | `kenaito-springboot-demo` |
+| `KENAITO_PROFILE`       | 环境      | `daily`                   |
+| `KENAITO_VERSION`       | 配置版本    | `latest`                  |
+| `KENAITO_TOKEN`         | 认证令牌    | 空                         |
+| `KENAITO_SYNC_INTERVAL` | 同步间隔（秒） | `30`                      |
+| `KENAITO_CACHE_DIR`     | 缓存目录    | `.`                       |

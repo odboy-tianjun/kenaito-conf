@@ -18,8 +18,8 @@ kenaito-conf/
 ├── kenaito-conf-go-client-demo/         # （测试通过）Go 客户端示例
 ├── kenaito-conf-springboot2-client/     # （测试通过）Java Spring Boot 2.x 客户端 SDK（JDK 8+）
 ├── kenaito-conf-springboot2-client-demo/# （测试通过）Spring Boot 2.x 客户端示例（端口 8081）
-├── kenaito-conf-python-client/          # （待测试）Python 客户端 SDK（Python 3.10+）
-├── kenaito-conf-python-client-demo/     # （待测试）Python 客户端示例（端口 8082）
+├── kenaito-conf-python-client/          # （测试通过）Python 客户端 SDK（Python 3.10+）
+├── kenaito-conf-python-client-demo/     # （测试通过）Python 客户端示例（端口 8082）
 ├── kenaito-conf-nodejs-client/          # （待测试）Node.js 客户端 SDK（Node.js 18+）
 ├── kenaito-conf-nodejs-client-demo/     # （待测试）Node.js 客户端示例（端口 8083）
 ├── kenaito-conf-php-client/             # （待测试）PHP 客户端 SDK（PHP 8.0+）

@@ -20,8 +20,8 @@ kenaito-conf/
 ├── kenaito-conf-springboot2-client-demo/# （测试通过）Spring Boot 2.x 客户端示例（端口 8081）
 ├── kenaito-conf-python-client/          # （测试通过）Python 客户端 SDK（Python 3.10+）
 ├── kenaito-conf-python-client-demo/     # （测试通过）Python 客户端示例（端口 8082）
-├── kenaito-conf-nodejs-client/          # （待测试）Node.js 客户端 SDK（Node.js 18+）
-├── kenaito-conf-nodejs-client-demo/     # （待测试）Node.js 客户端示例（端口 8083）
+├── kenaito-conf-nodejs-client/          # （测试通过）Node.js 客户端 SDK（Node.js 18+）
+├── kenaito-conf-nodejs-client-demo/     # （测试通过）Node.js 客户端示例（端口 8083）
 ├── kenaito-conf-php-client/             # （待测试）PHP 客户端 SDK（PHP 8.0+）
 ├── kenaito-conf-php-client-demo/        # （待测试）PHP 客户端示例
 ├── kenaito-conf-dotnet-client/          # （待测试）.NET 客户端 SDK（.NET 6.0+）

@@ -354,22 +354,22 @@ var value = client.Get("database.host");
 
 ### C 客户端
 
-适用于嵌入式或高性能场景，依赖 libcurl + OpenSSL。
+适用于嵌入式或高性能场景，依赖 libcurl。
 
 **编译**
 
 ```bash
-gcc -o demo kenaito-conf-c-client/main.c -lcurl -lssl -lcrypto
+gcc -o demo kenaito-conf-c-client/main.c -lcurl
 ```
 
 ### C++ 客户端
 
-依赖 libcurl + OpenSSL，C++17。
+依赖 libcurl，C++17。
 
 **编译**
 
 ```bash
-g++ -std=c++17 -o demo kenaito-conf-cpp-client/main.cpp -lcurl -lssl -lcrypto -lpthread
+g++ -std=c++17 -o demo kenaito-conf-cpp-client/main.cpp -lcurl -lpthread
 ```
 
 ### Lua 客户端

@@ -130,7 +130,7 @@ int main() {
     char *response = http_post_json(url, payload);
     if (response) {
         printf("Response received (%zu bytes)\n", strlen(response));
-        /* In production: parse JSON, decrypt, store configs */
+        /* In production: parse JSON, store configs */
         printf("First 200 chars: %.200s\n", response);
         free(response);
     } else {

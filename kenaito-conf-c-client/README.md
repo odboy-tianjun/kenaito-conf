@@ -6,12 +6,6 @@ C 语言的配置中心客户端 SDK，适用于嵌入式设备或高性能场�
 
 - libcurl
 
-### macOS
-
-```bash
-brew install curl
-```
-
 ### Ubuntu/Debian
 
 ```bash
@@ -23,6 +17,8 @@ apt-get install libcurl4-openssl-dev
 ```bash
 yum install libcurl-devel
 ```
+
+> **macOS**：系统自带 libcurl，无需额外安装。
 
 ## 快速开始
 

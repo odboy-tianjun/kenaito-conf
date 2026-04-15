@@ -22,22 +22,66 @@ yum install libcurl-devel
 
 ## 快速开始
 
-### 1. 编译示例
+### 1. 安装依赖
+
+#### Ubuntu/Debian
+
+```bash
+apt-get install libcurl4-openssl-dev libcjson-dev
+```
+
+#### CentOS/RHEL
+
+```bash
+yum install libcurl-devel libcjson-devel
+```
+
+#### macOS
+
+```bash
+brew install cJSON
+```
+
+> **macOS**：系统自带 libcurl，无需额外安装。
+
+### 2. 编译 SDK
+
+```bash
+cd kenaito-conf-c-client
+gcc -c main.c -o kenaito_conf.o -lcurl -lcjson
+ar rcs libkenaito_conf.a kenaito_conf.o
+```
+
+### 3. 编译 Demo
 
 ```bash
 cd kenaito-conf-c-client-demo
-gcc -o demo ../kenaito-conf-c-client/main.c -lcurl
+gcc -o demo main.c ../kenaito-conf-c-client/main.c -lcurl -lcjson -lpthread
 ./demo
 ```
 
-### 2. 使用示例
+### 4. 使用 SDK
+
+在你的项目中：
+
+```c
+#include "kenaito-conf-c-client/main.c"
+
+// 或者链接静态库
+// gcc -o myapp myapp.c -lkenaito_conf -lcurl -lcjson -lpthread
+```
+
+### 5. 完整示例
 
 ```c
 #include <stdio.h>
-#include "main.c"
+#include "../kenaito-conf-c-client/main.c"
+
+void on_change(const char *key, const char *value) {
+    printf("config changed: %s = %s\n", key, value);
+}
 
 int main() {
-    // 配置客户端参数
     Config config = {
         .baseUrl = "http://localhost:8080",
         .appName = "my-app",
@@ -51,15 +95,10 @@ int main() {
 
     ConfigClient client;
     config_client_init(&client, &config);
-
-    // 注册配置变更回调
-    client.onChange = [](const char *key, const char *value) {
-        printf("config changed: %s = %s\n", key, value);
-    };
+    client.onChange = on_change;
 
     // 启动客户端（拉取全量配置 + 开启定时同步）
-    // 注：当前版本为简化实现，仅演示单次拉取
-    // 完整版本需实现定时轮询和长轮询机制
+    config_client_start(&client);
 
     // 获取配置
     const char *dbHost = config_client_get(&client, "database.host");
@@ -67,6 +106,9 @@ int main() {
 
     printf("database.host = %s\n", dbHost ? dbHost : "not found");
     printf("database.port = %s\n", dbPort ? dbPort : "not found");
+
+    // 等待配置变更
+    sleep(30);
 
     // 停止客户端
     config_client_stop(&client);

@@ -46,17 +46,37 @@ brew install cJSON
 
 ### 2. 编译 SDK
 
+**macOS：**
+
 ```bash
 cd kenaito-conf-c-client
-gcc -c main.c -o kenaito_conf.o -lcurl -lcjson
+gcc -c main.c -o kenaito_conf.o -I/usr/local/opt/cjson/include -lcurl
+ar rcs libkenaito_conf.a kenaito_conf.o
+```
+
+**Ubuntu/Debian：**
+
+```bash
+cd kenaito-conf-c-client
+gcc -c main.c -o kenaito_conf.o $(pkg-config --cflags libcjson) -lcurl
 ar rcs libkenaito_conf.a kenaito_conf.o
 ```
 
 ### 3. 编译 Demo
 
+**macOS：**
+
 ```bash
 cd kenaito-conf-c-client-demo
-gcc -o demo main.c ../kenaito-conf-c-client/main.c -lcurl -lcjson -lpthread
+gcc -o demo main.c ../kenaito-conf-c-client/main.c -I/usr/local/opt/cjson/include -lcurl -lpthread
+./demo
+```
+
+**Ubuntu/Debian：**
+
+```bash
+cd kenaito-conf-c-client-demo
+gcc -o demo main.c ../kenaito-conf-c-client/main.c $(pkg-config --cflags libcjson) -lcurl -lpthread
 ./demo
 ```
 

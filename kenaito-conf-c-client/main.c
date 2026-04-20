@@ -14,12 +14,15 @@
  *   - pthread
  * 
  * 编译：
- *   gcc -c main.c -o kenaito_conf.o -lcurl -lcjson
+ *   gcc -c main.c -o kenaito_conf.o -I/usr/local/opt/cjson/include -lcurl
  * 
  * @author odboy
  * @version 1.0.0
  * @date 2026-10-16
  */
+
+#ifndef KENAITO_CONF_CLIENT_IMPL
+#define KENAITO_CONF_CLIENT_IMPL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -440,3 +443,5 @@ void config_client_stop(ConfigClient *client) {
     curl_global_cleanup();
     printf("[Client] Stopped\n");
 }
+
+#endif /* KENAITO_CONF_CLIENT_IMPL */

@@ -14,30 +14,30 @@
 kenaito-conf/
 ├── server/                              # Go 管理端（Gin + xorm）
 ├── web/                                 # Vue 2 前端
-├── kenaito-conf-go-client/              # （测试通过）Go 客户端 SDK
-├── kenaito-conf-go-client-demo/         # （测试通过）Go 客户端示例
-├── kenaito-conf-springboot2-client/     # （测试通过）Java Spring Boot 2.x 客户端 SDK（JDK 8+）
-├── kenaito-conf-springboot2-client-demo/# （测试通过）Spring Boot 2.x 客户端示例（端口 8081）
-├── kenaito-conf-python-client/          # （测试通过）Python 客户端 SDK（Python 3.10+）
-├── kenaito-conf-python-client-demo/     # （测试通过）Python 客户端示例（端口 8082）
-├── kenaito-conf-nodejs-client/          # （测试通过）Node.js 客户端 SDK（Node.js 18+）
-├── kenaito-conf-nodejs-client-demo/     # （测试通过）Node.js 客户端示例（端口 8083）
-├── kenaito-conf-php-client/             # （待测试）PHP 客户端 SDK（PHP 8.0+）
-├── kenaito-conf-php-client-demo/        # （待测试）PHP 客户端示例
-├── kenaito-conf-dotnet-client/          # （待测试）.NET 客户端 SDK（.NET 6.0+）
-├── kenaito-conf-dotnet-client-demo/     # （待测试）.NET 客户端示例
-├── kenaito-conf-c-client/               # （待测试）C 客户端 SDK（libcurl + OpenSSL）
-├── kenaito-conf-c-client-demo/          # （待测试）C 客户端示例
-├── kenaito-conf-cpp-client/             # （待测试）C++ 客户端 SDK（libcurl + OpenSSL）
-├── kenaito-conf-cpp-client-demo/        # （待测试）C++ 客户端示例
-├── kenaito-conf-lua-client/             # （待测试）Lua 客户端 SDK（Lua 5.3+）
-├── kenaito-conf-lua-client-demo/        # （待测试）Lua 客户端示例
-├── kenaito-conf-kotlin-client/          # （待测试）Kotlin 客户端 SDK（Kotlin 1.9+）
-├── kenaito-conf-kotlin-client-demo/     # （待测试）Kotlin 客户端示例
-├── kenaito-conf-rust-client/            # （待测试）Rust 客户端 SDK（Rust 1.70+）
-├── kenaito-conf-rust-client-demo/       # （待测试）Rust 客户端示例
-├── kenaito-conf-ruby-client/            # （待测试）Ruby 客户端 SDK（Ruby 2.7+）
-└── kenaito-conf-ruby-client-demo/       # （待测试）Ruby 客户端示例
+├── kenaito-conf-go-client/              # Go 客户端 SDK
+├── kenaito-conf-go-client-demo/         # Go 客户端示例
+├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x 客户端 SDK（JDK 8+）
+├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x 客户端示例（端口 8081）
+├── kenaito-conf-python-client/          # Python 客户端 SDK（Python 3.10+）
+├── kenaito-conf-python-client-demo/     # Python 客户端示例（端口 8082）
+├── kenaito-conf-nodejs-client/          # Node.js 客户端 SDK（Node.js 18+）
+├── kenaito-conf-nodejs-client-demo/     # Node.js 客户端示例（端口 8083）
+├── kenaito-conf-php-client/             # （未支持）PHP 客户端 SDK（PHP 8.0+）
+├── kenaito-conf-php-client-demo/        # （未支持）PHP 客户端示例
+├── kenaito-conf-dotnet-client/          # （未支持）.NET 客户端 SDK（.NET 6.0+）
+├── kenaito-conf-dotnet-client-demo/     # （未支持）.NET 客户端示例
+├── kenaito-conf-c-client/               # （未支持）C 客户端 SDK（libcurl + OpenSSL）
+├── kenaito-conf-c-client-demo/          # （未支持）C 客户端示例
+├── kenaito-conf-cpp-client/             # （未支持）C++ 客户端 SDK（libcurl + OpenSSL）
+├── kenaito-conf-cpp-client-demo/        # （未支持）C++ 客户端示例
+├── kenaito-conf-lua-client/             # （未支持）Lua 客户端 SDK（Lua 5.3+）
+├── kenaito-conf-lua-client-demo/        # （未支持）Lua 客户端示例
+├── kenaito-conf-kotlin-client/          # （未支持）Kotlin 客户端 SDK（Kotlin 1.9+）
+├── kenaito-conf-kotlin-client-demo/     # （未支持）Kotlin 客户端示例
+├── kenaito-conf-rust-client/            # （未支持）Rust 客户端 SDK（Rust 1.70+）
+├── kenaito-conf-rust-client-demo/       # （未支持）Rust 客户端示例
+├── kenaito-conf-ruby-client/            # （未支持）Ruby 客户端 SDK（Ruby 2.7+）
+└── kenaito-conf-ruby-client-demo/       # （未支持）Ruby 客户端示例
 ```
 
 ## 快速开始
@@ -132,6 +132,7 @@ dbHost := c.Get("db.host")
 **1. 引入依赖**
 
 ```xml
+
 <dependency>
     <groupId>cn.odboy</groupId>
     <artifactId>kenaito-conf-springboot2-client</artifactId>
@@ -166,26 +167,8 @@ private String databaseHost;
 private Integer databasePort;
 ```
 
-配置变更时会自动刷新 `@Value` 字段，无需重启应用。详见 [Spring Boot 2 客户端文档](kenaito-conf-springboot2-client/README.md)。
-
-### Java Spring Boot 3 客户端
-
-适用于 JDK 11+ 项目（当前编译目标 Spring Boot 2.7.18，预留 Spring Boot 3 升级路径）。
-
-**1. 引入依赖**
-
-```xml
-
-<dependency>
-    <groupId>cn.odboy</groupId>
-    <artifactId>kenaito-conf-springboot3-client</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-
-**2. 配置与使用方式同 Spring Boot 2.x 客户端。**
-
-> **注意：** 升级到 Spring Boot 3 需先将编译目标改为 JDK 17，并更新 `spring-boot.version` 为 3.x、Spring Framework 为 6.x。
+配置变更时会自动刷新 `@Value`
+字段，无需重启应用。详见 [Spring Boot 2 客户端文档](kenaito-conf-springboot2-client/README.md)。
 
 ### Python 客户端
 
@@ -279,225 +262,6 @@ const allConfigs = client.getAll();
 
 // 停止
 client.stop();
-```
-
-### PHP 客户端
-
-适用于 PHP 8.0+ 项目。
-
-**1. 安装**
-
-```bash
-cd kenaito-conf-php-client
-composer install
-```
-
-**2. 使用**
-
-```php
-use KenaitoConf\Config;
-use KenaitoConf\ConfigClient;
-
-$config = new Config([
-    'baseUrl' => 'http://localhost:8080',
-    'appName' => 'kenaito-springboot-demo',
-    'env' => 'daily',
-    'syncInterval' => 30,
-]);
-
-$client = new ConfigClient($config);
-
-$client->onChange(function ($changed) {
-    foreach ($changed as $k => $v) {
-        echo "config changed: $k = $v\n";
-    }
-});
-
-$client->start();
-$value = $client->get('database.host');
-$all = $client->getAll();
-```
-
-### .NET 客户端
-
-适用于 .NET 6.0+ 项目。
-
-**1. 引入依赖**
-
-```xml
-
-<ProjectReference Include="..\kenaito-conf-dotnet-client\KenaitoConf.csproj"/>
-```
-
-**2. 使用**
-
-```csharp
-using KenaitoConf;
-
-var config = new Config
-{
-    BaseUrl = "http://localhost:8080",
-    AppName = "kenaito-springboot-demo",
-    Env = "daily",
-    SyncInterval = 30,
-};
-
-var client = new ConfigClient(config);
-client.OnChange(changed => {
-    foreach (var kv in changed)
-        Console.WriteLine($"config changed: {kv.Key} = {kv.Value}");
-});
-
-await client.StartAsync();
-var value = client.Get("database.host");
-```
-
-### C 客户端
-
-适用于嵌入式或高性能场景，依赖 libcurl。
-
-**编译**
-
-```bash
-gcc -o demo kenaito-conf-c-client/main.c -lcurl
-```
-
-### C++ 客户端
-
-依赖 libcurl，C++17。
-
-**编译**
-
-```bash
-g++ -std=c++17 -o demo kenaito-conf-cpp-client/main.cpp -lcurl -lpthread
-```
-
-### Lua 客户端
-
-适用于 Lua 5.3+ 项目（如 OpenResty/Nginx 网关）。
-
-**1. 安装**
-
-```bash
-cd kenaito-conf-lua-client
-luarocks install kenaito-conf-client-1.0.0-1.rockspec
-```
-
-**2. 使用**
-
-```lua
-local ConfigClient = require("kenaito-conf")
-
-local config = {
-    baseUrl = "http://localhost:8080",
-    appName = "kenaito-springboot-demo",
-    env = "daily",
-    syncInterval = 30,
-}
-
-local client = ConfigClient.new(config)
-client:on_change(function(changed)
-    for k, v in pairs(changed) do
-        print("config changed: " .. k .. " = " .. v)
-    end
-end)
-client:start()
-```
-
-### Kotlin 客户端
-
-适用于 Kotlin 1.9+ 项目。
-
-**1. 编译**
-
-```bash
-cd kenaito-conf-kotlin-client
-./gradlew build
-```
-
-**2. 使用**
-
-```kotlin
-import kenait.conf.Config
-import kenait.conf.ConfigClient
-
-val config = Config(
-    baseUrl = "http://localhost:8080",
-    appName = "kenaito-springboot-demo",
-    env = "daily",
-    syncInterval = 30,
-)
-
-val client = ConfigClient(config)
-client.onChange { changed ->
-    changed.forEach { (k, v) -> println("config changed: $k = $v") }
-}
-client.start()
-val value = client.get("database.host")
-```
-
-### Rust 客户端
-
-适用于 Rust 1.70+ 项目。
-
-**1. 在 Cargo.toml 中添加**
-
-```toml
-[dependencies]
-kenaito-conf = { path = "../kenaito-conf-rust-client" }
-```
-
-**2. 使用**
-
-```rust
-use kenaito_conf::{Config, ConfigClient};
-
-let config = Config {
-    base_url: "http://localhost:8080".to_string(),
-    app_name: "kenaito-springboot-demo".to_string(),
-    env: "daily".to_string(),
-    sync_interval: 30,
-    ..Default::default()
-};
-
-let client = ConfigClient::new(config);
-client.on_change(|changed| {
-    for (k, v) in changed { println!("config changed: {} = {}", k, v); }
-});
-client.start().await.unwrap();
-let value = client.get("database.host");
-```
-
-### Ruby 客户端
-
-适用于 Ruby 2.7+ 项目。
-
-**1. 安装**
-
-```bash
-cd kenaito-conf-ruby-client
-gem build kenaito-conf.gemspec
-gem install kenaito-conf-1.0.0.gem
-```
-
-**2. 使用**
-
-```ruby
-require 'kenaito_conf'
-
-config = KenaitoConf::Config.new(
-  base_url: 'http://localhost:8080',
-  app_name: 'kenaito-springboot-demo',
-  env: 'daily',
-  sync_interval: 30
-)
-
-client = KenaitoConf::ConfigClient.new(config)
-client.on_change do |changed|
-  changed.each { |k, v| puts "config changed: #{k} = #{v}" }
-end
-client.start
-value = client.get('database.host')
 ```
 
 ## API 概览

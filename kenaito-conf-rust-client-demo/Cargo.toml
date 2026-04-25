@@ -1,8 +1,0 @@
-[package]
-name = "kenaito-conf-demo"
-version = "1.0.0"
-edition = "2021"
-
-[dependencies]
-kenaito-conf = { path = "../kenaito-conf-rust-client" }
-tokio = { version = "1", features = ["full"] }

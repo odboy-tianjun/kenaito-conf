@@ -19,6 +19,7 @@ type AppConfig struct {
 	UpdatedBy string     `xorm:"varchar(32)" json:"updatedBy"`
 	Global    bool       `xorm:"-" json:"global"`
 	AppNames  string     `xorm:"-" json:"appNames,omitempty"`
+	ClientCount int      `xorm:"-" json:"clientCount,omitempty"`
 }
 
 type AppConfigHistory struct {

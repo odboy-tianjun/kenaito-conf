@@ -70,6 +70,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	}
 
 	result := make(map[string]interface{})
+	var configIds []int
 
 	// load global configs
 	if !req.IgnoreGlobal && app.GroupId != nil {
@@ -77,6 +78,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0)",
 			req.Env, version, *app.GroupId).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
+			configIds = append(configIds, cfg.Id)
 			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 			for k, v := range kvMap {
 				result[k] = v
@@ -90,6 +92,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ?",
 			req.Env, version, *app.ParentId).Find(&parentConfigs)
 		for _, cfg := range parentConfigs {
+			configIds = append(configIds, cfg.Id)
 			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 			for k, v := range kvMap {
 				result[k] = v
@@ -102,6 +105,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ?",
 		req.Env, version, app.Id).Find(&appConfigs)
 	for _, cfg := range appConfigs {
+		configIds = append(configIds, cfg.Id)
 		kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 		for k, v := range kvMap {
 			result[k] = v
@@ -114,6 +118,9 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	}
 
 	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
+
+	// record client instances asynchronously
+	go h.recordClientInstances(c.ClientIP(), configIds, req.AppName, req.Env, "fetchAll")
 
 	c.JSON(http.StatusOK, result)
 }
@@ -156,6 +163,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	lastUpdateTime := time.UnixMilli(req.LastTime)
 
 	result := make(map[string]string)
+	var configIds []int
 
 	// load global changed configs
 	if !req.IgnoreGlobal && app.GroupId != nil {
@@ -163,6 +171,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ?",
 			req.Env, version, *app.GroupId, lastUpdateTime).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
+			configIds = append(configIds, cfg.Id)
 			h.addChangedConfigs(result, &cfg, req.FetchAll)
 		}
 	}
@@ -173,6 +182,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ? AND updated_at > ?",
 			req.Env, version, *app.ParentId, lastUpdateTime).Find(&parentConfigs)
 		for _, cfg := range parentConfigs {
+			configIds = append(configIds, cfg.Id)
 			h.addChangedConfigs(result, &cfg, req.FetchAll)
 		}
 	}
@@ -182,10 +192,14 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ? AND updated_at > ?",
 		req.Env, version, app.Id, lastUpdateTime).Find(&appConfigs)
 	for _, cfg := range appConfigs {
+		configIds = append(configIds, cfg.Id)
 		h.addChangedConfigs(result, &cfg, req.FetchAll)
 	}
 
 	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
+
+	// record client instances asynchronously
+	go h.recordClientInstances(c.ClientIP(), configIds, req.AppName, req.Env, "fetchChanged")
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: result})
 }
@@ -197,6 +211,38 @@ func (h *ConfigApiHandler) addChangedConfigs(result map[string]string, config *m
 	}
 }
 
-func (h *ConfigApiHandler) Ping(c *gin.Context) {
-	c.String(http.StatusOK, "200")
+func (h *ConfigApiHandler) recordClientInstances(ip string, configIds []int, appName, env, fetchType string) {
+	if len(configIds) == 0 || ip == "" {
+		return
+	}
+	now := time.Now()
+	for _, configId := range configIds {
+		var existing model.ClientInstance
+		has, _ := dao.Engine.Where("app_config_id = ? AND ip = ?", configId, ip).Get(&existing)
+		if has {
+			existing.LastFetchAt = &now
+			existing.LastFetchType = fetchType
+			existing.UpdatedAt = &now
+			dao.Engine.ID(existing.Id).Cols("last_fetch_at", "last_fetch_type", "updated_at").Update(&existing)
+		} else {
+			instance := model.ClientInstance{
+				AppConfigId:   configId,
+				AppName:       appName,
+				Env:           env,
+				IP:            ip,
+				LastFetchAt:   &now,
+				LastFetchType: fetchType,
+				CreatedAt:     &now,
+				UpdatedAt:     &now,
+			}
+			dao.Engine.Insert(&instance)
+		}
+	}
+	// cleanup records older than 5 minutes
+	fiveMinutesAgo := now.Add(-5 * time.Minute)
+	dao.Engine.Where("last_fetch_at < ?", fiveMinutesAgo).Delete(&model.ClientInstance{})
 }
+
+// func (h *ConfigApiHandler) Ping(c *gin.Context) {
+// 	c.String(http.StatusOK, "200")
+// }

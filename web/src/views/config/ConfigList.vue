@@ -25,6 +25,14 @@
         </template>
       </el-table-column>
       <el-table-column prop="version" label="版本" width="100"></el-table-column>
+      <el-table-column prop="clientCount" label="在线客户端" width="120">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.clientCount > 0" type="text" @click="showClients(scope.row)">
+            {{ scope.row.clientCount }} 个
+          </el-button>
+          <span v-else style="color: #909399">无</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="200">
         <template slot-scope="scope">
           <el-button type="text" @click="showHistory(scope.row)">变更历史</el-button>
@@ -92,11 +100,29 @@
         </div>
       </div>
     </el-dialog>
+
+    <el-dialog title="在线客户端" :visible.sync="clientVisible" width="700px">
+      <el-table :data="clientList" border stripe>
+        <el-table-column prop="ip" label="IP 地址" width="160"></el-table-column>
+        <el-table-column prop="lastFetchType" label="拉取方式" width="120">
+          <template slot-scope="scope">
+            <span v-if="scope.row.lastFetchType === 'fetchAll'">全量拉取</span>
+            <span v-else>增量拉取</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="最后拉取时间">
+          <template slot-scope="scope">
+            {{ formatTime(scope.row.lastFetchAt) }}
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
 import { getConfigList, deleteConfig, getConfigHistory, rollbackConfig, getConfig } from '../../api/config'
+import { getClientListByConfig } from '../../api/client'
 import request from '../../api/request'
 
 function computeDiff(oldText, newText) {
@@ -204,7 +230,9 @@ export default {
       contentVisible: false,
       currentHistory: {},
       leftLines: [],
-      rightLines: []
+      rightLines: [],
+      clientVisible: false,
+      clientList: []
     }
   },
   created() {
@@ -304,6 +332,13 @@ export default {
         this.$message.success('回滚成功')
         this.historyVisible = false
         this.loadData()
+      } catch (e) {}
+    },
+    async showClients(row) {
+      try {
+        const res = await getClientListByConfig(row.id)
+        this.clientList = res.data || []
+        this.clientVisible = true
       } catch (e) {}
     }
   }

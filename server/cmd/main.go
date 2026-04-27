@@ -42,6 +42,7 @@ func main() {
 	userHandler := handler.NewUserHandler(permService)
 	groupHandler := handler.NewGroupHandler()
 	profileHandler := handler.NewProfileHandler()
+	clientHandler := handler.NewClientHandler()
 
 	// init gin
 	r := gin.Default()
@@ -101,6 +102,9 @@ func main() {
 		admin.POST("/profile/delete/:id", profileHandler.Delete)
 		admin.POST("/profile/switch/:id", profileHandler.Switch)
 		admin.GET("/profile/options", profileHandler.Options)
+
+		// client instance management
+		admin.GET("/client/listByConfig", clientHandler.ListByConfigId)
 	}
 
 	// user info routes (JWT auth required)
@@ -116,7 +120,7 @@ func main() {
 	{
 		api.POST("/fetchAllConfigs", configApiHandler.FetchAllConfigs)
 		api.POST("/fetchChangedConfigs", configApiHandler.FetchChangedConfigs)
-		api.GET("/ping", configApiHandler.Ping)
+		// api.GET("/ping", configApiHandler.Ping)
 	}
 
 	// start server

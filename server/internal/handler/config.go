@@ -80,9 +80,31 @@ func (h *ConfigHandler) List(c *gin.Context) {
 	total, _ := dao.Engine.Where(whereClause).Count(&model.AppConfig{})
 	dao.Engine.Where(whereClause).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&configs)
 
-	// build app names
+	// build app names and client counts
+	configIds := make([]int, 0, len(configs))
 	for i := range configs {
 		configs[i].AppNames = h.buildAppNames(&configs[i])
+		configIds = append(configIds, configs[i].Id)
+	}
+	// batch query client counts
+	if len(configIds) > 0 {
+		type countResult struct {
+			AppConfigId int `xorm:"app_config_id"`
+			Cnt         int `xorm:"cnt"`
+		}
+		var results []countResult
+		dao.Engine.Table("client_instance").
+			Select("app_config_id, COUNT(DISTINCT ip) as cnt").
+			In("app_config_id", configIds).
+			GroupBy("app_config_id").
+			Find(&results)
+		countMap := make(map[int]int, len(results))
+		for _, r := range results {
+			countMap[r.AppConfigId] = r.Cnt
+		}
+		for i := range configs {
+			configs[i].ClientCount = countMap[configs[i].Id]
+		}
 	}
 
 	c.JSON(http.StatusOK, model.PageResult{PageNo: req.PageNo, PageSize: req.PageSize, Total: total, Data: configs})

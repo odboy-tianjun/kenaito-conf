@@ -103,7 +103,6 @@ func (h *AppHandler) GetById(c *gin.Context) {
 type AddAppRequest struct {
 	Id        int    `json:"id"`
 	GroupId   *int   `json:"groupId"`
-	ParentId  *int   `json:"parentId"`
 	Name      string `json:"name" binding:"required"`
 	Code      string `json:"code" binding:"required"`
 	ServiceId string `json:"serviceId"`
@@ -141,7 +140,6 @@ func (h *AppHandler) Add(c *gin.Context) {
 
 	app := model.Application{
 		GroupId:   req.GroupId,
-		ParentId:  req.ParentId,
 		Name:      req.Name,
 		Code:      req.Code,
 		ServiceId: req.ServiceId,
@@ -151,15 +149,6 @@ func (h *AppHandler) Add(c *gin.Context) {
 		Enabled:   true,
 		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
 		CreatedBy: userInfo.Name,
-	}
-
-	if req.ParentId != nil {
-		var parent model.Application
-		if has, _ := dao.Engine.ID(*req.ParentId).Get(&parent); has {
-			app.GroupId = parent.GroupId
-			app.IsModule = true
-			app.Code = parent.Code + "-" + req.Code
-		}
 	}
 
 	dao.Engine.Insert(&app)

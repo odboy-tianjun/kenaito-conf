@@ -5,12 +5,10 @@ import "time"
 type Application struct {
 	Id         int        `xorm:"int autoincr pk" json:"id"`
 	GroupId    *int       `xorm:"int" json:"groupId"`
-	ParentId   *int       `xorm:"int" json:"parentId"`
 	Name       string     `xorm:"varchar(32)" json:"name"`
 	Code       string     `xorm:"varchar(32)" json:"code"`
 	ServiceId  string     `xorm:"varchar(64)" json:"serviceId"`
 	Token      string     `xorm:"varchar(64)" json:"token"`
-	IsModule   bool       `xorm:"tinyint(1) default 1" json:"isModule"`
 	OwnerId    *int       `xorm:"int" json:"ownerId"`
 	OwnerName  string     `xorm:"varchar(16)" json:"ownerName"`
 	Remarks    string     `xorm:"text" json:"remarks"`
@@ -19,7 +17,5 @@ type Application struct {
 	CreatedBy  string     `xorm:"varchar(32)" json:"createdBy"`
 	UpdatedAt  *time.Time `xorm:"datetime" json:"updatedAt"`
 	UpdatedBy  string     `xorm:"varchar(32)" json:"updatedBy"`
-	ParentName string     `xorm:"-" json:"parentName,omitempty"`
-	FullName   string     `xorm:"-" json:"fullName,omitempty"`
 	GroupName  string     `xorm:"-" json:"groupName,omitempty"`
 }

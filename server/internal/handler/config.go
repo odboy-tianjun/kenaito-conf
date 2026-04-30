@@ -94,7 +94,7 @@ func (h *ConfigHandler) List(c *gin.Context) {
 		}
 		var results []countResult
 		dao.Engine.Table("client_instance").
-			Select("app_config_id, COUNT(DISTINCT ip) as cnt").
+			Select("app_config_id, COUNT(*) as cnt").
 			In("app_config_id", configIds).
 			GroupBy("app_config_id").
 			Find(&results)

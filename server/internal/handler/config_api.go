@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"fmt"
 	"kenaito-conf/server/internal/dao"
+	"kenaito-conf/server/internal/logger"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/service"
 	"net/http"
@@ -242,14 +242,11 @@ func (h *ConfigApiHandler) recordClientInstances(ip string, configIds []int, app
 			}
 			_, err := dao.Engine.Insert(&instance)
 			if err != nil {
-				fmt.Printf("[recordClientInstances] insert error: %v\n", err)
+				logger.SugaredLogger.Errorf("[recordClientInstances] insert error: %v", err)
 				continue
 			}
 		}
 	}
-	// cleanup records older than 5 minutes
-	fiveMinutesAgo := now.Add(-5 * time.Minute)
-	dao.Engine.Where("last_ping_at < ?", fiveMinutesAgo).Delete(&model.ClientInstance{})
 }
 
 // func (h *ConfigApiHandler) Ping(c *gin.Context) {

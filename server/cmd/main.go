@@ -7,10 +7,9 @@ import (
 	"kenaito-conf/server/internal/dao"
 	"kenaito-conf/server/internal/handler"
 	"kenaito-conf/server/internal/middleware"
-	"kenaito-conf/server/internal/model"
+	"kenaito-conf/server/internal/scheduler"
 	"kenaito-conf/server/internal/service"
 	"log"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -128,17 +127,10 @@ func main() {
 	// start server
 	addr := fmt.Sprintf(":%d", config.Cfg.Server.Port)
 	log.Printf("Server starting on %s", addr)
-	
-	// 启动定时任务：清理过期的客户端实例记录
-	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
-		defer ticker.Stop()
-		for range ticker.C {
-			fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
-			dao.Engine.Where("last_ping_at < ?", fiveMinutesAgo).Delete(&model.ClientInstance{})
-		}
-	}()
-	
+
+	// 启动定时任务
+	scheduler.Start()
+
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("server error: %v", err)
 	}

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"kenaito-conf/server/internal/dao"
 	"kenaito-conf/server/internal/logger"
 	"kenaito-conf/server/internal/model"
@@ -228,13 +229,13 @@ func (h *ConfigApiHandler) recordClientInstances(ip string, configIds []int, app
 			}
 		} else {
 			instance := model.ClientInstance{
-				AppConfigId:   configId,
-				AppName:       appName,
-				Env:           env,
-				Ip:            ip,
-				LastPingAt:    &now,
-				CreatedAt:     &now,
-				UpdatedAt:     &now,
+				AppConfigId: configId,
+				AppName:     appName,
+				Env:         env,
+				Ip:          ip,
+				LastPingAt:  &now,
+				CreatedAt:   &now,
+				UpdatedAt:   &now,
 			}
 			if fetchType != "" {
 				instance.LastFetchAt = &now

@@ -48,6 +48,6 @@ env/
 # Environment
 .env
 .env.local
-/kenaito-conf-springboot2-client-demo/target/classes/META-INF/spring.factories
-/kenaito-conf-springboot2-client-demo/target/classes/application.properties
-server/application-dev.properties
+
+# Server
+application-dev.properties

@@ -13,10 +13,15 @@ const routes = [
   {
     path: '/',
     component: () => import('../views/Layout.vue'),
-    redirect: '/config/list',
+    redirect: '/app/list',
     children: [
       {
-        path: '/config/list',
+        path: '/app/config/list',
+        name: 'AllConfigList',
+        component: () => import('../views/config/AllConfigList.vue')
+      },
+      {
+        path: '/app/:appId/config/list',
         name: 'ConfigList',
         component: () => import('../views/config/ConfigList.vue')
       },

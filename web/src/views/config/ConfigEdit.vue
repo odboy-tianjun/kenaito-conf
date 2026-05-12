@@ -52,7 +52,11 @@ export default {
       try {
         await updateConfig(this.form)
         this.$message.success('保存成功')
-        this.$router.push('/config/list')
+        if (this.form.appId) {
+          this.$router.push(`/app/${this.form.appId}/config/list`)
+        } else {
+          this.$router.push('/app/list')
+        }
       } catch (e) {}
     }
   }

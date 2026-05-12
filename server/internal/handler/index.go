@@ -23,23 +23,36 @@ func (h *IndexHandler) GetMenus(c *gin.Context) {
 
 	menus := make([]model.Menu, 0)
 
-	// 全局管理菜单
-	menu1 := model.NewMenu("全局管理", "fa-cubes", false)
+	// 环境管理
 	if userInfo.IsSuperAdmin() {
-		menu1.AddSubMenu("环境管理", "&#xe61d;", "/profile/list")
+		menuEnv := model.NewMenu("环境管理", "fa-cubes", true)
+		menuEnv.AddSubMenu("环境管理", "&#xe61d;", "/profile/list")
+		menus = append(menus, menuEnv)
 	}
-	menu1.AddSubMenu("业务组管理", "&#xe613;", "/group/list")
-	if userInfo.IsSuperAdmin() || userInfo.IsGroupAdmin() {
-		menu1.AddSubMenu("用户管理", "&#xe612;", "/user/list")
-	}
-	menu1.AddSubMenu("应用管理", "&#xe63b;", "/app/list")
-	menus = append(menus, menu1)
 
-	// 配置管理菜单
-	menu2 := model.NewMenu("配置管理", "fa-cubes", true)
-	menu2.AddSubMenu("配置列表", "&#xe60a;", "/config/list")
-	menu2.AddSubMenu("新建配置", "&#xe63c;", "/config/add")
-	menus = append(menus, menu2)
+	// 业务组管理
+	if userInfo.IsSuperAdmin() {
+		menuGroup := model.NewMenu("业务组管理", "fa-cubes", true)
+		menuGroup.AddSubMenu("业务组管理", "&#xe613;", "/group/list")
+		menus = append(menus, menuGroup)
+	}
+
+	// 用户管理
+	if userInfo.IsSuperAdmin() || userInfo.IsGroupAdmin() {
+		menuUser := model.NewMenu("用户管理", "fa-cubes", true)
+		menuUser.AddSubMenu("用户管理", "&#xe612;", "/user/list")
+		menus = append(menus, menuUser)
+	}
+
+	// 应用管理
+	menuApp := model.NewMenu("应用管理", "fa-cubes", true)
+	menuApp.AddSubMenu("应用管理", "&#xe63b;", "/app/list")
+	menus = append(menus, menuApp)
+
+	// 配置管理
+	menuConfig := model.NewMenu("配置管理", "fa-cubes", true)
+	menuConfig.AddSubMenu("配置管理", "&#xe60a;", "/app/config/list")
+	menus = append(menus, menuConfig)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: menus})
 }

@@ -27,7 +27,7 @@
         <el-input v-model="form.version" placeholder="latest"></el-input>
       </el-form-item>
       <el-form-item label="配置格式">
-        <el-select v-model="form.type" placeholder="请选择">
+        <el-select v-model="form.type" placeholder="请选择" style="width: 240px">
           <el-option :value="2" label="配置项 (key=value)"></el-option>
           <el-option :value="1" label="文件 (properties/xml/yaml)"></el-option>
           <el-option :value="3" label="JSON"></el-option>
@@ -95,7 +95,11 @@ export default {
         try {
           await addConfig(this.form)
           this.$message.success('保存成功')
-          this.$router.push('/config/list')
+          if (this.form.appId) {
+            this.$router.push(`/app/${this.form.appId}/config/list`)
+          } else {
+            this.$router.push('/app/list')
+          }
         } catch (e) {}
       })
     }

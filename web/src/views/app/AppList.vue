@@ -2,7 +2,10 @@
   <el-card>
     <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
       <span>应用管理</span>
-      <el-button type="primary" @click="showAdd">新建应用</el-button>
+      <div>
+        <el-button type="primary" @click="showAdd">新建应用</el-button>
+        <el-button type="primary" @click="$router.push('/config/add')">新建配置</el-button>
+      </div>
     </div>
     <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
@@ -24,8 +27,9 @@
           <el-switch v-model="scope.row.enabled" @change="handleSwitch(scope.row)"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="280">
         <template slot-scope="scope">
+          <el-button type="text" @click="$router.push(`/app/${scope.row.id}/config/list`)">配置列表</el-button>
           <el-button type="text" @click="showEdit(scope.row)">编辑</el-button>
           <el-button type="text" @click="handleToken(scope.row)">
             {{ scope.row.token ? '删除Token' : '生成Token' }}

@@ -12,7 +12,7 @@
       <el-table-column prop="name" label="应用名称"></el-table-column>
       <el-table-column prop="code" label="应用编码"></el-table-column>
       <el-table-column prop="groupName" label="所属业务组" width="120"></el-table-column>
-      <el-table-column prop="ownerName" label="负责人" width="100"></el-table-column>
+      <el-table-column prop="ownerNames" label="负责人" width="100"></el-table-column>
       <el-table-column prop="token" label="Token" width="200">
         <template slot-scope="scope">
           <template v-if="scope.row.token">
@@ -61,7 +61,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="负责人">
-          <el-select v-model="form.ownerId" placeholder="请选择">
+          <el-select v-model="form.ownerIds" multiple placeholder="请选择">
             <el-option v-for="u in users" :key="u.value" :label="u.label" :value="parseInt(u.value)"></el-option>
           </el-select>
         </el-form-item>
@@ -126,12 +126,18 @@ export default {
     },
     showAdd() {
       this.dialogTitle = '新建应用'
-      this.form = { name: '', code: '', groupId: null, ownerId: null, remarks: '' }
+      this.form = { name: '', code: '', groupId: null, ownerIds: [], remarks: '' }
       this.dialogVisible = true
     },
     showEdit(row) {
       this.dialogTitle = '编辑应用'
       this.form = { ...row }
+      // 将逗号分隔的ID字符串转为数组
+      if (typeof this.form.ownerIds === 'string' && this.form.ownerIds) {
+        this.form.ownerIds = this.form.ownerIds.split(',').map(Number)
+      } else if (!Array.isArray(this.form.ownerIds)) {
+        this.form.ownerIds = []
+      }
       this.dialogVisible = true
     },
     handleSubmit() {

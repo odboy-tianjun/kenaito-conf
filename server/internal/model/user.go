@@ -18,12 +18,20 @@ type User struct {
 	GroupMaster   bool       `xorm:"-" json:"groupMaster,omitempty"`
 }
 
+func (User) TableName() string {
+	return "user"
+}
+
 type UserPermission struct {
 	Id      int    `xorm:"int autoincr pk" json:"id"`
 	UserId  int    `xorm:"int" json:"userId"`
 	Env     string `xorm:"varchar(16)" json:"env"`
 	AppId   int    `xorm:"int" json:"appId"`
 	Operate string `xorm:"varchar(8) default 'RW'" json:"operate"` // RO, RW
+}
+
+func (UserPermission) TableName() string {
+	return "user_permission"
 }
 
 type LoginUserInfo struct {

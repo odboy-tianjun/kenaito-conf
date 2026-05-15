@@ -14,3 +14,7 @@ type ClientInstance struct {
 	CreatedAt     *time.Time `xorm:"datetime" json:"createdAt"`
 	UpdatedAt     *time.Time `xorm:"datetime" json:"updatedAt"`
 }
+
+func (ClientInstance) TableName() string {
+	return "client_instance"
+}

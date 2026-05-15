@@ -8,6 +8,7 @@ import (
 	"kenaito-conf/server/internal/model"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -36,22 +37,30 @@ func (h *AppHandler) List(c *gin.Context) {
 	query := dao.Engine.Where("enabled = 1")
 
 	if !userInfo.IsSuperAdmin() {
+		userId, _ := strconv.Atoi(userInfo.Id)
+		userIdStr := strconv.Itoa(userId)
+
 		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
-			query = query.And("group_id = ?", *userInfo.GroupId)
+			// 组管理员：本组应用 + 自己是负责人的应用
+			query = query.And("(group_id = ? OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = ?))", *userInfo.GroupId, userId)
 		} else {
-			userId, _ := strconv.Atoi(userInfo.Id)
-			query = query.And("(owner_id = ? OR id IN (SELECT app_id FROM user_permissions WHERE user_id = ?))", userId, userId)
+			// 普通用户：自己是负责人的应用 + 被授权的应用
+			query = query.And("(FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = ?))", userId)
 		}
 	}
 
 	var apps []model.Application
 	whereClause := "enabled = 1"
 	if !userInfo.IsSuperAdmin() {
+		userId, _ := strconv.Atoi(userInfo.Id)
+		userIdStr := strconv.Itoa(userId)
+		
 		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
-			whereClause += " AND group_id = " + strconv.Itoa(*userInfo.GroupId)
+			// 组管理员：本组应用 + 自己是负责人的应用
+			whereClause += " AND (group_id = " + strconv.Itoa(*userInfo.GroupId) + " OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = " + strconv.Itoa(userId) + "))"
 		} else {
-			userId, _ := strconv.Atoi(userInfo.Id)
-			whereClause += " AND (owner_id = " + strconv.Itoa(userId) + " OR id IN (SELECT app_id FROM user_permissions WHERE user_id = " + strconv.Itoa(userId) + "))"
+			// 普通用户：自己是负责人的应用 + 被授权的应用
+			whereClause += " AND (FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = " + strconv.Itoa(userId) + "))"
 		}
 	}
 	if req.AppType != "" {
@@ -101,13 +110,13 @@ func (h *AppHandler) GetById(c *gin.Context) {
 }
 
 type AddAppRequest struct {
-	Id        int    `json:"id"`
-	GroupId   *int   `json:"groupId"`
-	Name      string `json:"name" binding:"required"`
-	Code      string `json:"code" binding:"required"`
-	ServiceId string `json:"serviceId"`
-	OwnerId   *int   `json:"ownerId"`
-	Remarks   string `json:"remarks"`
+	Id        int     `json:"id"`
+	GroupId   *int    `json:"groupId"`
+	Name      string  `json:"name" binding:"required"`
+	Code      string  `json:"code" binding:"required"`
+	ServiceId string  `json:"serviceId"`
+	OwnerIds  []int   `json:"ownerIds"`
+	Remarks   string  `json:"remarks"`
 }
 
 func (h *AppHandler) Add(c *gin.Context) {
@@ -126,29 +135,39 @@ func (h *AppHandler) Add(c *gin.Context) {
 		return
 	}
 
-	ownerId := req.OwnerId
-	if ownerId == nil {
+	// 处理负责人：如果未指定，默认为当前用户
+	ownerIds := req.OwnerIds
+	if len(ownerIds) == 0 {
 		uid, _ := strconv.Atoi(userInfo.Id)
-		ownerId = &uid
+		ownerIds = []int{uid}
 	}
 
-	var owner model.User
-	if has, _ := dao.Engine.ID(*ownerId).Get(&owner); !has {
-		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "负责人不存在"})
+	// 验证所有用户ID都存在
+	var users []model.User
+	if err := dao.Engine.In("id", ownerIds).Find(&users); err != nil || len(users) != len(ownerIds) {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "部分负责人不存在"})
 		return
 	}
 
+	// 构建逗号分隔的用户名和ID字符串
+	ownerNames := make([]string, 0, len(users))
+	ownerIdStrs := make([]string, 0, len(users))
+	for _, u := range users {
+		ownerNames = append(ownerNames, u.Name)
+		ownerIdStrs = append(ownerIdStrs, strconv.Itoa(u.Id))
+	}
+
 	app := model.Application{
-		GroupId:   req.GroupId,
-		Name:      req.Name,
-		Code:      req.Code,
-		ServiceId: req.ServiceId,
-		OwnerId:   ownerId,
-		OwnerName: owner.Name,
-		Remarks:   req.Remarks,
-		Enabled:   true,
-		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
-		CreatedBy: userInfo.Name,
+		GroupId:    req.GroupId,
+		Name:       req.Name,
+		Code:       req.Code,
+		ServiceId:  req.ServiceId,
+		OwnerIds:   strings.Join(ownerIdStrs, ","),
+		OwnerNames: strings.Join(ownerNames, ","),
+		Remarks:    req.Remarks,
+		Enabled:    true,
+		CreatedAt:  func() *time.Time { t := time.Now(); return &t }(),
+		CreatedBy:  userInfo.Name,
 	}
 
 	dao.Engine.Insert(&app)
@@ -180,20 +199,32 @@ func (h *AppHandler) Update(c *gin.Context) {
 	app.Name = req.Name
 	app.ServiceId = req.ServiceId
 	app.Remarks = req.Remarks
-	if req.OwnerId != nil {
-		if app.OwnerId == nil || *req.OwnerId != *app.OwnerId {
-			var owner model.User
-			if has, _ := dao.Engine.ID(*req.OwnerId).Get(&owner); has {
-				app.OwnerName = owner.Name
-			}
+
+	// 更新负责人
+	if len(req.OwnerIds) > 0 {
+		// 验证所有用户ID都存在
+		var users []model.User
+		if err := dao.Engine.In("id", req.OwnerIds).Find(&users); err != nil || len(users) != len(req.OwnerIds) {
+			c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "部分负责人不存在"})
+			return
 		}
-		app.OwnerId = req.OwnerId
+
+		// 构建逗号分隔的用户名和ID字符串
+		ownerNames := make([]string, 0, len(users))
+		ownerIdStrs := make([]string, 0, len(users))
+		for _, u := range users {
+			ownerNames = append(ownerNames, u.Name)
+			ownerIdStrs = append(ownerIdStrs, strconv.Itoa(u.Id))
+		}
+		app.OwnerIds = strings.Join(ownerIdStrs, ",")
+		app.OwnerNames = strings.Join(ownerNames, ",")
 	}
+
 	app.UpdatedBy = userInfo.Name
 	now := time.Now()
 	app.UpdatedAt = &now
 
-	dao.Engine.ID(app.Id).Cols("name", "service_id", "remarks", "owner_id", "owner_name", "updated_by", "updated_at").Update(&app)
+	dao.Engine.ID(app.Id).Cols("name", "service_id", "remarks", "owner_ids", "owner_names", "updated_by", "updated_at").Update(&app)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: true})
 }
@@ -255,7 +286,8 @@ func (h *AppHandler) Options(c *gin.Context) {
 			query = query.And("group_id = ?", *userInfo.GroupId)
 		} else {
 			userId, _ := strconv.Atoi(userInfo.Id)
-			query = query.And("owner_id = ?", userId)
+			userIdStr := strconv.Itoa(userId)
+			query = query.And("FIND_IN_SET(?, owner_ids) > 0", userIdStr)
 		}
 	}
 

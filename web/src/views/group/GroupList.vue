@@ -31,8 +31,8 @@
         <el-form-item label="组名称" prop="name">
           <el-input v-model="form.name"></el-input>
         </el-form-item>
-        <el-form-item label="负责人" prop="masterUid">
-          <el-select v-model="form.masterUid" placeholder="请选择">
+        <el-form-item label="负责人" prop="masterUids">
+          <el-select v-model="form.masterUids" multiple placeholder="请选择">
             <el-option v-for="u in users" :key="u.value" :label="u.label" :value="parseInt(u.value)"></el-option>
           </el-select>
         </el-form-item>
@@ -62,7 +62,7 @@ export default {
       form: {},
       rules: {
         name: [{ required: true, message: '请输入组名称', trigger: 'blur' }],
-        masterUid: [{ required: true, message: '请选择负责人', trigger: 'change' }]
+        masterUids: [{ required: true, message: '请选择负责人', trigger: 'change', type: 'array', min: 1 }]
       },
       users: []
     }
@@ -105,12 +105,18 @@ export default {
     },
     showAdd() {
       this.dialogTitle = '新建业务组'
-      this.form = { name: '', masterUid: null, remarks: '' }
+      this.form = { name: '', masterUids: [], remarks: '' }
       this.dialogVisible = true
     },
     showEdit(row) {
       this.dialogTitle = '编辑业务组'
       this.form = { ...row }
+      // 将逗号分隔的ID字符串转为数组
+      if (typeof this.form.masterUids === 'string' && this.form.masterUids) {
+        this.form.masterUids = this.form.masterUids.split(',').map(Number)
+      } else {
+        this.form.masterUids = []
+      }
       this.dialogVisible = true
     },
     handleSubmit() {

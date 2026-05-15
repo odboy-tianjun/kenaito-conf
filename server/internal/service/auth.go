@@ -141,7 +141,8 @@ func (s *AuthService) loadPermissions(userInfo *model.LoginUserInfo, userId int)
 	if userInfo.IsGroupAdmin() {
 		dao.Engine.Where("group_id = ?", userInfo.GroupId).Find(&apps)
 	} else {
-		dao.Engine.Where("owner_id = ?", userId).Find(&apps)
+		userIdStr := strconv.Itoa(userId)
+		dao.Engine.Where("FIND_IN_SET(?, owner_ids) > 0", userIdStr).Find(&apps)
 	}
 	for _, app := range apps {
 		userInfo.GrantAppIds = append(userInfo.GrantAppIds, app.Id)

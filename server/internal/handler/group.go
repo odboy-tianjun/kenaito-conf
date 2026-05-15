@@ -6,6 +6,7 @@ import (
 	"kenaito-conf/server/internal/model"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,10 +36,10 @@ func (h *GroupHandler) GetById(c *gin.Context) {
 }
 
 type AddGroupRequest struct {
-	Id        int    `json:"id"`
-	Name      string `json:"name" binding:"required"`
-	MasterUid *int   `json:"masterUid" binding:"required"`
-	Remarks   string `json:"remarks"`
+	Id         int     `json:"id"`
+	Name       string  `json:"name" binding:"required"`
+	MasterUids []int   `json:"masterUids" binding:"required"`
+	Remarks    string  `json:"remarks"`
 }
 
 func (h *GroupHandler) Add(c *gin.Context) {
@@ -60,20 +61,29 @@ func (h *GroupHandler) Add(c *gin.Context) {
 		return
 	}
 
-	var master model.User
-	if has, _ := dao.Engine.ID(*req.MasterUid).Get(&master); !has {
-		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "管理员不存在"})
+	// 验证所有用户ID都存在
+	var users []model.User
+	if err := dao.Engine.In("id", req.MasterUids).Find(&users); err != nil || len(users) != len(req.MasterUids) {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "部分管理员不存在"})
 		return
 	}
 
+	// 构建逗号分隔的用户名和ID字符串
+	masterNames := make([]string, 0, len(users))
+	masterIds := make([]string, 0, len(users))
+	for _, u := range users {
+		masterNames = append(masterNames, u.Name)
+		masterIds = append(masterIds, strconv.Itoa(u.Id))
+	}
+
 	group := model.BusinessGroup{
-		Name:      req.Name,
-		Master:    master.Name,
-		MasterUid: req.MasterUid,
-		Remarks:   req.Remarks,
-		Enabled:   true,
-		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
-		CreatedBy: userInfo.Name,
+		Name:       req.Name,
+		Master:     strings.Join(masterNames, ","),
+		MasterUids: strings.Join(masterIds, ","),
+		Remarks:    req.Remarks,
+		Enabled:    true,
+		CreatedAt:  func() *time.Time { t := time.Now(); return &t }(),
+		CreatedBy:  userInfo.Name,
 	}
 
 	dao.Engine.Insert(&group)
@@ -106,20 +116,30 @@ func (h *GroupHandler) Update(c *gin.Context) {
 		return
 	}
 
-	group.Name = req.Name
-	group.Remarks = req.Remarks
-	if req.MasterUid != nil && (group.MasterUid == nil || *req.MasterUid != *group.MasterUid) {
-		var master model.User
-		if has, _ := dao.Engine.ID(*req.MasterUid).Get(&master); has {
-			group.Master = master.Name
-			group.MasterUid = req.MasterUid
-		}
+	// 验证所有用户ID都存在
+	var users []model.User
+	if err := dao.Engine.In("id", req.MasterUids).Find(&users); err != nil || len(users) != len(req.MasterUids) {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "部分管理员不存在"})
+		return
 	}
+
+	// 构建逗号分隔的用户名和ID字符串
+	masterNames := make([]string, 0, len(users))
+	masterIds := make([]string, 0, len(users))
+	for _, u := range users {
+		masterNames = append(masterNames, u.Name)
+		masterIds = append(masterIds, strconv.Itoa(u.Id))
+	}
+
+	group.Name = req.Name
+	group.Master = strings.Join(masterNames, ",")
+	group.MasterUids = strings.Join(masterIds, ",")
+	group.Remarks = req.Remarks
 	group.UpdatedBy = userInfo.Name
 	now := time.Now()
 	group.UpdatedAt = &now
 
-	dao.Engine.ID(group.Id).Cols("name", "remarks", "master", "master_uid", "updated_by", "updated_at").Update(&group)
+	dao.Engine.ID(group.Id).Cols("name", "remarks", "master", "master_uids", "updated_by", "updated_at").Update(&group)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0})
 }

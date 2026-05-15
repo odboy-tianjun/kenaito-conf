@@ -22,6 +22,10 @@ type AppConfig struct {
 	ClientCount int      `xorm:"-" json:"clientCount,omitempty"`
 }
 
+func (AppConfig) TableName() string {
+	return "app_config"
+}
+
 type AppConfigHistory struct {
 	Id            int        `xorm:"int autoincr pk" json:"id"`
 	OriginId      int        `xorm:"int" json:"originId"`
@@ -36,4 +40,8 @@ type AppConfigHistory struct {
 	ActiveContents string   `xorm:"-" json:"activeContents,omitempty"`
 	CreatedAt     *time.Time `xorm:"datetime" json:"createdAt"`
 	CreatedBy     string     `xorm:"varchar(32)" json:"createdBy"`
+}
+
+func (AppConfigHistory) TableName() string {
+	return "app_config_history"
 }

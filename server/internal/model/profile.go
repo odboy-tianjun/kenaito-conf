@@ -12,9 +12,17 @@ type Profile struct {
 	UpdatedAt *time.Time `xorm:"datetime" json:"updatedAt"`
 }
 
+func (Profile) TableName() string {
+	return "profile"
+}
+
 type AppExtrAttr struct {
 	AppId    int    `xorm:"int pk" json:"appId"`
 	Env      string `xorm:"varchar(16) pk" json:"env"`
 	AttrName string `xorm:"varchar(32) pk" json:"attrName"`
 	AttrValue string `xorm:"varchar(100)" json:"attrValue"`
+}
+
+func (AppExtrAttr) TableName() string {
+	return "app_extr_attr"
 }

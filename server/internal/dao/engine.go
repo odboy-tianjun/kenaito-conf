@@ -39,18 +39,8 @@ func Init() error {
 		return err
 	}
 
-	// 迁移旧数据 & 清理格式
-	migrateOldData()
-
 	// insert initial data if tables are empty
 	return initSeedData()
-}
-
-func migrateOldData() {
-	// 清理 owner_ids 中可能存在的空格
-	Engine.Exec("UPDATE application SET owner_ids = REPLACE(owner_ids, ' ', '') WHERE owner_ids LIKE '% %'")
-	// 清理 master_uids 中可能存在的空格
-	Engine.Exec("UPDATE business_group SET master_uids = REPLACE(master_uids, ' ', '') WHERE master_uids LIKE '% %'")
 }
 
 func initSeedData() error {

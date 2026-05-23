@@ -6,6 +6,7 @@ import (
 	"kenaito-conf/server/internal/util"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"xorm.io/xorm"
 )
@@ -22,7 +23,10 @@ func Init() error {
 	}
 	Engine.SetMaxOpenConns(20)
 	Engine.SetMaxIdleConns(5)
-	Engine.ShowSQL(true)
+
+	if config.Cfg.Server.Mode == gin.DebugMode {
+		Engine.ShowSQL(true)
+	}
 
 	// sync table structures
 	if err := Engine.Sync2(

@@ -1,15 +1,24 @@
 <template>
-  <el-card>
-    <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
-      <span>业务组管理</span>
-      <div>
-        <el-select v-model="filterName" placeholder="组名称" clearable filterable style="width: 200px; margin-right: 10px">
-          <el-option v-for="g in groupOptions" :key="g" :label="g" :value="g"></el-option>
-        </el-select>
+  <div>
+    <el-card style="margin-bottom: 16px">
+      <el-form :inline="true" @submit.native.prevent="handleSearch">
+        <el-form-item label="组名称">
+          <el-select v-model="filterName" placeholder="请选择" clearable filterable style="width: 200px">
+            <el-option v-for="g in groupOptions" :key="g" :label="g" :value="g"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <el-card>
+      <div slot="header" style="display: flex; justify-content: flex-end">
         <el-button type="primary" @click="showAdd">新建业务组</el-button>
       </div>
-    </div>
-    <el-table :data="filteredList" v-loading="loading" border stripe>
+      <el-table :data="filteredList" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="组名称"></el-table-column>
       <el-table-column prop="master" label="负责人"></el-table-column>
@@ -46,6 +55,7 @@
       </span>
     </el-dialog>
   </el-card>
+  </div>
 </template>
 
 <script>
@@ -57,6 +67,7 @@ export default {
       list: [],
       loading: false,
       filterName: '',
+      searchName: '',
       dialogVisible: false,
       dialogTitle: '',
       form: {},
@@ -72,8 +83,8 @@ export default {
       return [...new Set(this.list.map(g => g.name))].filter(name => name && name.trim())
     },
     filteredList() {
-      if (!this.filterName) return this.list
-      return this.list.filter(g => g.name === this.filterName)
+      if (!this.searchName) return this.list
+      return this.list.filter(g => g.name === this.searchName)
     }
   },
   created() {
@@ -81,6 +92,13 @@ export default {
     this.loadUsers()
   },
   methods: {
+    handleSearch() {
+      this.searchName = this.filterName
+    },
+    handleReset() {
+      this.filterName = ''
+      this.searchName = ''
+    },
     async loadData() {
       this.loading = true
       try {

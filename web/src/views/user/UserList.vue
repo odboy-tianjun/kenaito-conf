@@ -1,25 +1,40 @@
 <template>
-  <el-card>
-    <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
-      <span>用户管理</span>
-      <div>
-        <el-input v-model="query.name" placeholder="用户名" clearable style="width: 140px; margin-right: 10px" @clear="loadData" @keyup.enter.native="loadData"></el-input>
-        <el-select v-model="query.type" placeholder="类型" clearable style="width: 120px; margin-right: 10px" @change="loadData">
-          <el-option value="user" label="普通用户"></el-option>
-          <el-option value="groupAdmin" label="组管理员"></el-option>
-          <el-option value="superAdmin" label="超级管理员"></el-option>
-        </el-select>
-        <el-select v-model="query.groupId" placeholder="所属组" clearable filterable style="width: 160px; margin-right: 10px" @change="loadData">
-          <el-option v-for="g in groups" :key="g.value" :label="g.label" :value="g.value"></el-option>
-        </el-select>
-        <el-select v-model="query.enabled" placeholder="状态" clearable style="width: 100px; margin-right: 10px" @change="loadData">
-          <el-option :value="1" label="启用"></el-option>
-          <el-option :value="0" label="禁用"></el-option>
-        </el-select>
+  <div>
+    <el-card style="margin-bottom: 16px">
+      <el-form :inline="true" @submit.native.prevent="loadData">
+        <el-form-item label="用户名">
+          <el-input v-model="query.name" placeholder="请输入" clearable style="width: 140px"></el-input>
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="query.type" placeholder="请选择" clearable style="width: 120px">
+            <el-option value="user" label="普通用户"></el-option>
+            <el-option value="groupAdmin" label="组管理员"></el-option>
+            <el-option value="superAdmin" label="超级管理员"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属组">
+          <el-select v-model="query.groupId" placeholder="请选择" clearable filterable style="width: 160px">
+            <el-option v-for="g in groups" :key="g.value" :label="g.label" :value="g.value"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="query.enabled" placeholder="请选择" clearable style="width: 100px">
+            <el-option :value="1" label="启用"></el-option>
+            <el-option :value="0" label="禁用"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="loadData">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <el-card>
+      <div slot="header" style="display: flex; justify-content: flex-end">
         <el-button type="primary" @click="showAdd">新建用户</el-button>
       </div>
-    </div>
-    <el-table :data="list" v-loading="loading" border stripe>
+      <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="用户名"></el-table-column>
       <el-table-column prop="mobile" label="手机号"></el-table-column>
@@ -78,6 +93,7 @@
       </span>
     </el-dialog>
   </el-card>
+  </div>
 </template>
 
 <script>
@@ -110,6 +126,9 @@ export default {
     this.loadGroups()
   },
   methods: {
+    handleReset() {
+      this.query = { name: '', type: '', groupId: '', enabled: '' }
+    },
     async loadData() {
       this.loading = true
       try {

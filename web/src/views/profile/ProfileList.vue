@@ -1,7 +1,7 @@
 <template>
   <el-card>
     <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
-      <span>环境管理</span>
+      <span>环境列表</span>
       <el-button type="primary" @click="showAdd">新建环境</el-button>
     </div>
     <el-table :data="list" v-loading="loading" border stripe>

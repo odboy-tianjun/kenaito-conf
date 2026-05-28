@@ -1,13 +1,31 @@
 <template>
-  <el-card>
-    <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
-      <span>应用管理</span>
-      <div>
+  <div>
+    <el-card style="margin-bottom: 16px">
+      <el-form :inline="true" @submit.native.prevent="handleSearch">
+        <el-form-item label="应用名称">
+          <el-input v-model="query.name" placeholder="请输入" clearable style="width: 160px"></el-input>
+        </el-form-item>
+        <el-form-item label="应用编码">
+          <el-input v-model="query.code" placeholder="请输入" clearable style="width: 160px"></el-input>
+        </el-form-item>
+        <el-form-item label="业务组">
+          <el-select v-model="query.groupId" placeholder="请选择" clearable filterable style="width: 160px">
+            <el-option v-for="g in groups" :key="g.value" :label="g.label" :value="parseInt(g.value)"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <el-card>
+      <div slot="header" style="display: flex; justify-content: flex-end">
         <el-button type="primary" @click="showAdd">新建应用</el-button>
         <el-button type="primary" @click="$router.push('/config/add')">新建配置</el-button>
       </div>
-    </div>
-    <el-table :data="list" v-loading="loading" border stripe>
+      <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="应用名称"></el-table-column>
       <el-table-column prop="code" label="应用编码"></el-table-column>
@@ -75,6 +93,7 @@
       </span>
     </el-dialog>
   </el-card>
+  </div>
 </template>
 
 <script>
@@ -87,7 +106,7 @@ export default {
       list: [],
       loading: false,
       total: 0,
-      query: { pageNo: 1, pageSize: 20 },
+      query: { pageNo: 1, pageSize: 20, name: '', code: '', groupId: '' },
       dialogVisible: false,
       dialogTitle: '',
       form: {},
@@ -104,6 +123,14 @@ export default {
     this.loadOptions()
   },
   methods: {
+    handleSearch() {
+      this.query.pageNo = 1
+      this.loadData()
+    },
+    handleReset() {
+      this.query = { pageNo: 1, pageSize: 20, name: '', code: '', groupId: '' }
+      this.loadData()
+    },
     async loadData() {
       this.loading = true
       try {

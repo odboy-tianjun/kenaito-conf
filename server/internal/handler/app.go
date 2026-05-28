@@ -24,6 +24,9 @@ type AppListRequest struct {
 	PageNo   int    `form:"pageNo" binding:"required"`
 	PageSize int    `form:"pageSize" binding:"required"`
 	AppType  string `form:"appType"`
+	Name     string `form:"name"`
+	Code     string `form:"code"`
+	GroupId  string `form:"groupId"`
 }
 
 func (h *AppHandler) List(c *gin.Context) {
@@ -65,6 +68,15 @@ func (h *AppHandler) List(c *gin.Context) {
 	}
 	if req.AppType != "" {
 		whereClause += " AND service_id = '" + req.AppType + "'"
+	}
+	if req.Name != "" {
+		whereClause += " AND name LIKE '%" + req.Name + "%'"
+	}
+	if req.Code != "" {
+		whereClause += " AND code LIKE '%" + req.Code + "%'"
+	}
+	if req.GroupId != "" {
+		whereClause += " AND group_id = " + req.GroupId
 	}
 	
 	total, _ := dao.Engine.Where(whereClause).Count(&model.Application{})

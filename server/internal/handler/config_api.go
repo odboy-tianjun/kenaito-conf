@@ -214,18 +214,29 @@ func (h *ConfigApiHandler) recordClientInstances(ip string, configIds []int, app
 		return
 	}
 	now := time.Now()
+
+	// 批量查询已存在的记录
+	var existingList []model.ClientInstance
+	dao.Engine.Where("app_name = ? AND env = ? AND ip = ?", appName, env, ip).
+		In("app_config_id", configIds).
+		Find(&existingList)
+
+	existingMap := make(map[int]*model.ClientInstance, len(existingList))
+	for i := range existingList {
+		existingMap[existingList[i].AppConfigId] = &existingList[i]
+	}
+
+	var toInsert []model.ClientInstance
 	for _, configId := range configIds {
-		var existing model.ClientInstance
-		has, _ := dao.Engine.Where("app_config_id = ? AND app_name = ? AND env = ? AND ip = ?", configId, appName, env, ip).Get(&existing)
-		if has {
+		if existing, ok := existingMap[configId]; ok {
 			existing.LastPingAt = &now
 			existing.UpdatedAt = &now
 			if fetchType != "" {
 				existing.LastFetchAt = &now
 				existing.LastFetchType = fetchType
-				dao.Engine.ID(existing.Id).Cols("last_ping_at", "last_fetch_at", "last_fetch_type", "updated_at").Update(&existing)
+				dao.Engine.ID(existing.Id).Cols("last_ping_at", "last_fetch_at", "last_fetch_type", "updated_at").Update(existing)
 			} else {
-				dao.Engine.ID(existing.Id).Cols("last_ping_at", "updated_at").Update(&existing)
+				dao.Engine.ID(existing.Id).Cols("last_ping_at", "updated_at").Update(existing)
 			}
 		} else {
 			instance := model.ClientInstance{
@@ -241,11 +252,13 @@ func (h *ConfigApiHandler) recordClientInstances(ip string, configIds []int, app
 				instance.LastFetchAt = &now
 				instance.LastFetchType = fetchType
 			}
-			_, err := dao.Engine.Insert(&instance)
-			if err != nil {
-				logger.SugaredLogger.Errorf("[recordClientInstances] insert error: %v", err)
-				continue
-			}
+			toInsert = append(toInsert, instance)
+		}
+	}
+
+	if len(toInsert) > 0 {
+		if _, err := dao.Engine.Insert(&toInsert); err != nil {
+			logger.SugaredLogger.Errorf("[recordClientInstances] batch insert error: %v", err)
 		}
 	}
 }

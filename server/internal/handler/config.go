@@ -80,11 +80,39 @@ func (h *ConfigHandler) List(c *gin.Context) {
 	total, _ := dao.Engine.Where(whereClause).Count(&model.AppConfig{})
 	dao.Engine.Where(whereClause).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&configs)
 
-	// build app names and client counts
+	// build app names (batch query) and collect configIds for client counts
 	configIds := make([]int, 0, len(configs))
+	appIds := make(map[int]bool)
 	for i := range configs {
-		configs[i].AppNames = h.buildAppNames(&configs[i])
+		if configs[i].AppId != nil && *configs[i].AppId > 0 {
+			appIds[*configs[i].AppId] = true
+		}
 		configIds = append(configIds, configs[i].Id)
+	}
+	if len(appIds) > 0 {
+		idList := make([]int, 0, len(appIds))
+		for id := range appIds {
+			idList = append(idList, id)
+		}
+		var apps []model.Application
+		dao.Engine.In("id", idList).Find(&apps)
+		appMap := make(map[int]string, len(apps))
+		for _, app := range apps {
+			appMap[app.Id] = app.Name + "(" + app.Code + ")"
+		}
+		for i := range configs {
+			if configs[i].Global || configs[i].AppId == nil || *configs[i].AppId == 0 {
+				configs[i].AppNames = "全局配置"
+			} else {
+				configs[i].AppNames = appMap[*configs[i].AppId]
+			}
+		}
+	} else {
+		for i := range configs {
+			if configs[i].Global || configs[i].AppId == nil || *configs[i].AppId == 0 {
+				configs[i].AppNames = "全局配置"
+			}
+		}
 	}
 	// batch query client counts
 	if len(configIds) > 0 {

@@ -18,8 +18,13 @@ func NewProfileHandler() *ProfileHandler {
 }
 
 func (h *ProfileHandler) List(c *gin.Context) {
+	alias := c.Query("alias")
+	query := dao.Engine.Where("1=1")
+	if alias != "" {
+		query = query.Where("alias LIKE ?", "%"+alias+"%")
+	}
 	var profiles []model.Profile
-	dao.Engine.Find(&profiles)
+	query.Find(&profiles)
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: profiles})
 }
 

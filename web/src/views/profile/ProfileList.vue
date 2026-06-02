@@ -1,10 +1,22 @@
 <template>
-  <el-card>
-    <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
-      <span>环境列表</span>
-      <el-button type="primary" @click="showAdd">新建环境</el-button>
-    </div>
-    <el-table :data="list" v-loading="loading" border stripe>
+  <div>
+    <el-card style="margin-bottom: 16px">
+      <el-form :inline="true" @submit.native.prevent="handleSearch">
+        <el-form-item label="环境名称">
+          <el-input v-model="queryAlias" placeholder="请输入" clearable style="width: 200px"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <el-card>
+      <div slot="header" style="display: flex; justify-content: flex-end">
+        <el-button type="primary" @click="showAdd">新建环境</el-button>
+      </div>
+      <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="环境标识"></el-table-column>
       <el-table-column prop="alias" label="环境名称"></el-table-column>
@@ -52,6 +64,7 @@ export default {
     return {
       list: [],
       loading: false,
+      queryAlias: '',
       dialogVisible: false,
       dialogTitle: '',
       form: {},
@@ -64,10 +77,19 @@ export default {
     this.loadData()
   },
   methods: {
+    handleSearch() {
+      this.loadData()
+    },
+    handleReset() {
+      this.queryAlias = ''
+      this.loadData()
+    },
     async loadData() {
       this.loading = true
       try {
-        const res = await request({ url: '/admin/profile/list', method: 'get' })
+        const params = {}
+        if (this.queryAlias) params.alias = this.queryAlias
+        const res = await request({ url: '/admin/profile/list', method: 'get', params })
         this.list = res.data || []
       } finally {
         this.loading = false

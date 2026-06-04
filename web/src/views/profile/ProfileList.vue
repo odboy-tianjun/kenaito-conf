@@ -54,6 +54,7 @@
       </span>
     </el-dialog>
   </el-card>
+  </div>
 </template>
 
 <script>

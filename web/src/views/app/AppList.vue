@@ -23,7 +23,6 @@
     <el-card>
       <div slot="header" style="display: flex; justify-content: flex-end">
         <el-button type="primary" @click="showAdd">新建应用</el-button>
-        <el-button type="primary" @click="$router.push('/config/add')">新建配置</el-button>
       </div>
       <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>

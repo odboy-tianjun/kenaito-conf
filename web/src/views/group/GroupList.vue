@@ -21,7 +21,11 @@
       <el-table :data="filteredList" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="组名称"></el-table-column>
-      <el-table-column prop="master" label="负责人"></el-table-column>
+      <el-table-column prop="master" label="负责人">
+        <template slot-scope="scope">
+          <span>{{ scope.row.master ? scope.row.master.split(',').length : 0 }}人</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="remarks" label="备注"></el-table-column>
       <el-table-column prop="enabled" label="状态" width="100">
         <template slot-scope="scope">

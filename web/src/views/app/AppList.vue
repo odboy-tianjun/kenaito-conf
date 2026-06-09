@@ -29,7 +29,11 @@
       <el-table-column prop="name" label="应用名称"></el-table-column>
       <el-table-column prop="code" label="应用编码"></el-table-column>
       <el-table-column prop="groupName" label="所属业务组" width="120"></el-table-column>
-      <el-table-column prop="ownerNames" label="负责人" width="100"></el-table-column>
+      <el-table-column prop="ownerNames" label="负责人" width="100">
+        <template slot-scope="scope">
+          <span>{{ scope.row.ownerNames ? scope.row.ownerNames.split(',').length : 0 }}人</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="token" label="Token" width="200">
         <template slot-scope="scope">
           <template v-if="scope.row.token">

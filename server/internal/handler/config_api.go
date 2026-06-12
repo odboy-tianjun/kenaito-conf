@@ -6,12 +6,32 @@ import (
 	"kenaito-conf/server/internal/logger"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/service"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+// getClientIP 获取客户端 IPv4 地址，将 IPv6 环回地址转为 127.0.0.1
+func getClientIP(c *gin.Context) string {
+	ip := c.ClientIP()
+	if ip == "" {
+		return ""
+	}
+	parsed := net.ParseIP(ip)
+	if parsed == nil {
+		return ip
+	}
+	if parsed.IsLoopback() {
+		return "127.0.0.1"
+	}
+	if v4 := parsed.To4(); v4 != nil {
+		return v4.String()
+	}
+	return ip
+}
 
 type ConfigApiHandler struct {
 	parseService *service.ConfigParseService
@@ -107,7 +127,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
 
 	// record client instances asynchronously
-	go h.recordClientInstances(c.ClientIP(), configIds, req.AppName, req.Env, "fetchAll")
+	go h.recordClientInstances(getClientIP(c), configIds, req.AppName, req.Env, "fetchAll")
 
 	c.JSON(http.StatusOK, result)
 }
@@ -197,7 +217,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	if len(configIds) > 0 {
 		fetchType = "fetchChanged"
 	}
-	go h.recordClientInstances(c.ClientIP(), allConfigIds, req.AppName, req.Env, fetchType)
+	go h.recordClientInstances(getClientIP(c), allConfigIds, req.AppName, req.Env, fetchType)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: result})
 }

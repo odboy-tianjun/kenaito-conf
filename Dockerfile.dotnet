@@ -1,0 +1,23 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+
+WORKDIR /src
+
+# Copy client library
+COPY kenaito-conf-dotnet-client/ ./kenaito-conf-dotnet-client/
+
+# Copy demo project
+COPY kenaito-conf-dotnet-client-demo/ ./kenaito-conf-dotnet-client-demo/
+
+# Build
+WORKDIR /src/kenaito-conf-dotnet-client-demo
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
+
+WORKDIR /app
+COPY --from=build /app .
+
+ENTRYPOINT ["dotnet", "KenaitoConfDemo.dll"]

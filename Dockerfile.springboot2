@@ -1,0 +1,24 @@
+# Build stage
+FROM maven:3.9-eclipse-temurin-8 AS build
+
+WORKDIR /src
+
+# Copy client library and install to local Maven repo
+COPY kenaito-conf-springboot2-client/ ./kenaito-conf-springboot2-client/
+WORKDIR /src/kenaito-conf-springboot2-client
+RUN mvn clean install -DskipTests
+
+# Copy demo project and build
+COPY kenaito-conf-springboot2-client-demo/ ./kenaito-conf-springboot2-client-demo/
+WORKDIR /src/kenaito-conf-springboot2-client-demo
+RUN mvn clean package -DskipTests
+
+# Runtime stage
+FROM eclipse-temurin:8-jre
+
+WORKDIR /app
+COPY --from=build /src/kenaito-conf-springboot2-client-demo/target/*.jar app.jar
+
+EXPOSE 8081
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

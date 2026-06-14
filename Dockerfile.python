@@ -1,0 +1,29 @@
+# Build stage
+FROM python:3.12-slim AS build
+
+WORKDIR /src
+
+# Copy client library
+COPY kenaito-conf-python-client/ ./kenaito-conf-python-client/
+
+# Copy demo project
+COPY kenaito-conf-python-client-demo/ ./kenaito-conf-python-client-demo/
+
+# Install client library
+WORKDIR /src/kenaito-conf-python-client
+RUN pip install --no-cache-dir .
+
+# Install demo dependencies
+WORKDIR /src/kenaito-conf-python-client-demo
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Runtime stage
+FROM python:3.12-slim
+
+WORKDIR /app
+COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=build /src/kenaito-conf-python-client-demo .
+
+EXPOSE 8082
+
+CMD ["python", "app.py"]

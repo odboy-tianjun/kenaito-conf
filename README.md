@@ -24,8 +24,8 @@ kenaito-conf/
 ├── kenaito-conf-nodejs-client-demo/     # Node.js 客户端示例（端口 8083）
 ├── kenaito-conf-php-client/             # （未支持）PHP 客户端 SDK（PHP 8.0+）
 ├── kenaito-conf-php-client-demo/        # （未支持）PHP 客户端示例
-├── kenaito-conf-dotnet-client/          # （未支持）.NET 客户端 SDK（.NET 6.0+）
-├── kenaito-conf-dotnet-client-demo/     # （未支持）.NET 客户端示例
+├── kenaito-conf-dotnet-client/          # .NET 客户端 SDK（.NET 6.0+）
+├── kenaito-conf-dotnet-client-demo/     # .NET 客户端示例
 ├── kenaito-conf-c-client/               # （未支持）C 客户端 SDK（libcurl + OpenSSL）
 ├── kenaito-conf-c-client-demo/          # （未支持）C 客户端示例
 ├── kenaito-conf-cpp-client/             # （未支持）C++ 客户端 SDK（libcurl + OpenSSL）

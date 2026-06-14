@@ -6,19 +6,40 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+
+	"github.com/joho/godotenv"
 )
 
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if i, err := strconv.Atoi(value); err == nil {
+			return i
+		}
+	}
+	return defaultValue
+}
+
 func main() {
-	// create config
+	_ = godotenv.Load()
+
+	// create config from environment variables
 	cfg := &client.Config{
-		BaseURL: "http://localhost:8080",
-		AppName: "kenaito-springboot-demo",
-		Env:     "daily",
-		Version: "latest",
-		//Token:        "6f6966fe196572954b176c0e2a97bc399b050c6be31454b8d6b0f7f622b5d6f1",
-		SyncInterval: 10, // sync every 10 seconds
-		CacheDir:     ".",
+		BaseURL:      getEnv("KENAITO_BASE_URL", "http://localhost:8080"),
+		AppName:      getEnv("KENAITO_APP_NAME", "kenaito-springboot-demo"),
+		Env:          getEnv("KENAITO_ENV", "daily"),
+		Version:      getEnv("KENAITO_VERSION", "latest"),
+		Token:        getEnv("KENAITO_TOKEN", ""),
+		SyncInterval: getEnvInt("KENAITO_SYNC_INTERVAL", 10),
+		CacheDir:     getEnv("KENAITO_CACHE_DIR", "."),
 	}
 
 	// create client

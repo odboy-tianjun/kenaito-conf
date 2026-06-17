@@ -223,6 +223,18 @@ func (c *Client) fetchChanged() error {
 		delete(wrapper.Data, "latest.fetch.timestamp")
 	}
 
+	// 处理删除的配置
+	if deletedKeysStr, ok := wrapper.Data["deletedKeys"]; ok && deletedKeysStr != "" {
+		deletedKeys := strings.Split(deletedKeysStr, ",")
+		c.mu.Lock()
+		for _, key := range deletedKeys {
+			delete(c.configs, key)
+		}
+		c.mu.Unlock()
+		log.Printf("[ConfigClient] %d configs deleted", len(deletedKeys))
+		delete(wrapper.Data, "deletedKeys")
+	}
+
 	if len(wrapper.Data) > 0 {
 		changed := make(map[string]string)
 		for k, v := range wrapper.Data {

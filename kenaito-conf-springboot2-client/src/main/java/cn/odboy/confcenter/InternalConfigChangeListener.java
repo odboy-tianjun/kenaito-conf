@@ -63,6 +63,15 @@ public class InternalConfigChangeListener {
 							if (data.containsKey(LATEST_FETCH_TIMESTAMP)) {
 								params.put("lastTime", Long.parseLong(data.remove(LATEST_FETCH_TIMESTAMP).toString()));
 							}
+							// 处理删除的配置
+							if (data.containsKey("deletedKeys")) {
+								String deletedKeysStr = (String) data.remove("deletedKeys");
+								if (deletedKeysStr != null && !deletedKeysStr.isEmpty()) {
+									String[] deletedKeys = deletedKeysStr.split(",");
+									context.removeConfigs(java.util.Arrays.asList(deletedKeys));
+									logger.info("[ConfigClient] {} configs deleted", deletedKeys.length);
+								}
+							}
 							if (!data.isEmpty()) context.updateConfig(data);
 						}
 					}

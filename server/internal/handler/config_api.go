@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -171,6 +172,32 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 
 	result := make(map[string]string)
 	var configIds []int
+
+	// 查询已删除的配置（enabled=0 且 updated_at > lastTime），返回 deletedKeys
+	var deletedKeys []string
+	if !req.IgnoreGlobal && app.GroupId != nil {
+		var deletedGlobalConfigs []model.AppConfig
+		dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ?",
+			req.Env, version, *app.GroupId, lastUpdateTime).Find(&deletedGlobalConfigs)
+		for _, cfg := range deletedGlobalConfigs {
+			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
+			for k := range kvMap {
+				deletedKeys = append(deletedKeys, k)
+			}
+		}
+	}
+	var deletedAppConfigs []model.AppConfig
+	dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND app_id = ? AND updated_at > ?",
+		req.Env, version, app.Id, lastUpdateTime).Find(&deletedAppConfigs)
+	for _, cfg := range deletedAppConfigs {
+		kvMap := h.parseService.ParseConfigToKVMap(&cfg)
+		for k := range kvMap {
+			deletedKeys = append(deletedKeys, k)
+		}
+	}
+	if len(deletedKeys) > 0 {
+		result["deletedKeys"] = strings.Join(deletedKeys, ",")
+	}
 
 	// load global changed configs
 	if !req.IgnoreGlobal && app.GroupId != nil {

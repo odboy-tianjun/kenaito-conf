@@ -415,6 +415,42 @@ public class ConfigcenterContext {
         }
     }
 
+    public synchronized void removeConfigs(List<String> keys) {
+        for (String key : keys) {
+            localProps.remove(key);
+            logger.info("Config [{}] removed", key);
+        }
+        // Update Spring Environment property source
+        if (applicationContext != null) {
+            StandardEnvironment environment = (StandardEnvironment) applicationContext.getEnvironment();
+            MutablePropertySources propertySources = environment.getPropertySources();
+            synchronized (propertySources) {
+                if (propertySources.contains(MANAGER_PROPERTY_SOURCE)) {
+                    Properties properties = new Properties();
+                    Object source = propertySources.get(MANAGER_PROPERTY_SOURCE);
+                    if (source instanceof MapPropertySource) {
+                        Map<String, Object> map = ((MapPropertySource) source).getSource();
+                        for (Entry<String, Object> entry : map.entrySet()) {
+                            if (!keys.contains(entry.getKey())) {
+                                properties.put(entry.getKey(), entry.getValue());
+                            }
+                        }
+                    } else if (source instanceof PropertiesPropertySource) {
+                        Map<String, Object> src = ((PropertiesPropertySource) source).getSource();
+                        for (Entry<String, Object> entry : src.entrySet()) {
+                            if (!keys.contains(entry.getKey())) {
+                                properties.put(entry.getKey(), entry.getValue().toString());
+                            }
+                        }
+                    }
+                    propertySources.replace(MANAGER_PROPERTY_SOURCE, new PropertiesPropertySource(MANAGER_PROPERTY_SOURCE, properties));
+                }
+            }
+        }
+        // Refresh @Value and @ConfigurationProperties fields
+        refreshDynamicConfigFields();
+    }
+
     private void refreshDynamicConfigFields() {
         if (applicationContext != null) {
             try {

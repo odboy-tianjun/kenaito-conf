@@ -103,6 +103,15 @@ class ConfigClient:
         if ts:
             self._last_time = int(ts)
 
+        # 处理删除的配置
+        deleted_keys_str = changed_data.pop("deletedKeys", None)
+        if deleted_keys_str:
+            deleted_keys = deleted_keys_str.split(",")
+            with self._lock:
+                for key in deleted_keys:
+                    self._configs.pop(key, None)
+            logger.info("[ConfigClient] %d configs deleted", len(deleted_keys))
+
         if changed_data:
             changed = {}
             for k, v in changed_data.items():

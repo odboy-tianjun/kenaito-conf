@@ -127,6 +127,17 @@ export class ConfigClient {
     }
     delete changedData['latest.fetch.timestamp'];
 
+    // 处理删除的配置
+    const deletedKeysStr = changedData['deletedKeys'];
+    if (deletedKeysStr) {
+      const deletedKeys = deletedKeysStr.split(',');
+      for (const key of deletedKeys) {
+        delete this.configs[key];
+      }
+      console.info('[ConfigClient]', deletedKeys.length, 'configs deleted');
+      delete changedData['deletedKeys'];
+    }
+
     const changed = {};
     for (const [k, v] of Object.entries(changedData)) {
       changed[k] = v;

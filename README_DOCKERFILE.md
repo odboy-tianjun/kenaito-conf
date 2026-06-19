@@ -2,38 +2,13 @@
 
 本文档说明如何使用 Dockerfile 构建和测试各语言客户端 demo。
 
-## 前置条件
+所有命令均在项目根目录执行。
 
-- Docker 已安装
-- 配置中心服务端已启动（默认 `http://localhost:8080`）
-- 已在管理后台创建对应应用和环境
-
-## 快速构建
-
-在项目根目录执行：
+## Go 客户端
 
 ```bash
-# Go 客户端
 docker build -f Dockerfile.go -t kenaito-conf-go-demo .
 
-# Node.js 客户端
-docker build -f Dockerfile.nodejs -t kenaito-conf-nodejs-demo .
-
-# Python 客户端
-docker build -f Dockerfile.python -t kenaito-conf-python-demo .
-
-# .NET 客户端
-docker build -f Dockerfile.dotnet -t kenaito-conf-dotnet-demo .
-
-# Spring Boot 2 客户端
-docker build -f Dockerfile.springboot2 -t kenaito-conf-springboot2-demo .
-```
-
-## 运行测试
-
-### Go 客户端
-
-```bash
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
@@ -41,9 +16,11 @@ docker run -it --rm \
   kenaito-conf-go-demo
 ```
 
-### Node.js 客户端
+## Node.js 客户端
 
 ```bash
+docker build -f Dockerfile.nodejs -t kenaito-conf-nodejs-demo .
+
 docker run -d --rm --name nodejs-demo \
   -p 8083:8083 \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
@@ -62,9 +39,11 @@ curl http://localhost:8083/health
 docker stop nodejs-demo
 ```
 
-### Python 客户端
+## Python 客户端
 
 ```bash
+docker build -f Dockerfile.python -t kenaito-conf-python-demo .
+
 docker run -d --rm --name python-demo \
   -p 8082:8082 \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
@@ -83,9 +62,11 @@ curl http://localhost:8082/health
 docker stop python-demo
 ```
 
-### .NET 客户端
+## .NET 客户端
 
 ```bash
+docker build -f Dockerfile.dotnet -t kenaito-conf-dotnet-demo .
+
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
@@ -93,9 +74,11 @@ docker run -it --rm \
   kenaito-conf-dotnet-demo
 ```
 
-### Spring Boot 2 客户端
+## Spring Boot 2 客户端
 
 ```bash
+docker build -f Dockerfile.springboot2 -t kenaito-conf-springboot2-demo .
+
 docker run -d --rm --name springboot2-demo \
   -p 8081:8081 \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \

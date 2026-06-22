@@ -69,7 +69,7 @@ public class InternalConfigChangeListener {
 								if (deletedKeysStr != null && !deletedKeysStr.isEmpty()) {
 									String[] deletedKeys = deletedKeysStr.split(",");
 									context.removeConfigs(java.util.Arrays.asList(deletedKeys));
-									logger.info("[ConfigClient] {} configs deleted", deletedKeys.length);
+									logger.info("[ConfigClient] {} configs deleted: {}", deletedKeys.length, String.join(", ", deletedKeys));
 								}
 							}
 							if (!data.isEmpty()) context.updateConfig(data);

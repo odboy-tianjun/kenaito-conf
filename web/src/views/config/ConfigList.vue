@@ -1,15 +1,24 @@
 <template>
-  <el-card>
-    <div slot="header" style="display: flex; justify-content: space-between; align-items: center">
-      <span>配置列表</span>
-      <div>
-        <el-select v-model="query.env" placeholder="环境" clearable style="width: 160px; margin-right: 10px" @change="loadData">
-          <el-option v-for="p in profiles" :key="p.value" :label="p.label" :value="p.value"></el-option>
-        </el-select>
+  <div>
+    <el-card style="margin-bottom: 16px">
+      <el-form :inline="true" @submit.native.prevent="handleSearch">
+        <el-form-item label="环境">
+          <el-select v-model="query.env" placeholder="请选择" clearable style="width: 160px">
+            <el-option v-for="p in profiles" :key="p.value" :label="p.label" :value="p.value"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <el-card>
+      <div slot="header" style="display: flex; justify-content: flex-end">
         <el-button type="primary" @click="$router.push('/config/add')">新建配置</el-button>
       </div>
-    </div>
-    <el-table :data="list" v-loading="loading" border stripe>
+      <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
       <el-table-column prop="name" label="配置名"></el-table-column>
       <el-table-column prop="env" label="环境" width="80"></el-table-column>
@@ -115,6 +124,7 @@
       </el-table>
     </el-dialog>
   </el-card>
+  </div>
 </template>
 
 <script>
@@ -236,6 +246,15 @@ export default {
     this.loadProfiles()
   },
   methods: {
+    handleSearch() {
+      this.query.pageNo = 1
+      this.loadData()
+    },
+    handleReset() {
+      this.query.env = ''
+      this.query.pageNo = 1
+      this.loadData()
+    },
     async loadData() {
       this.loading = true
       try {

@@ -231,7 +231,7 @@ func (c *Client) fetchChanged() error {
 			delete(c.configs, key)
 		}
 		c.mu.Unlock()
-		log.Printf("[ConfigClient] %d configs deleted", len(deletedKeys))
+		log.Printf("[ConfigClient] %d configs deleted: %s", len(deletedKeys), strings.Join(deletedKeys, ", "))
 		delete(wrapper.Data, "deletedKeys")
 	}
 
@@ -250,7 +250,11 @@ func (c *Client) fetchChanged() error {
 
 		// notify listeners
 		c.listener.Notify(changed)
-		log.Printf("[ConfigClient] %d configs changed", len(changed))
+		changedKeys := make([]string, 0, len(changed))
+		for k := range changed {
+			changedKeys = append(changedKeys, k)
+		}
+		log.Printf("[ConfigClient] %d configs changed: %s", len(changed), strings.Join(changedKeys, ", "))
 	}
 
 	return nil

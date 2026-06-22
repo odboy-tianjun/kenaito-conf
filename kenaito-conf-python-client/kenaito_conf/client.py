@@ -110,7 +110,7 @@ class ConfigClient:
             with self._lock:
                 for key in deleted_keys:
                     self._configs.pop(key, None)
-            logger.info("[ConfigClient] %d configs deleted", len(deleted_keys))
+            logger.info("[ConfigClient] %d configs deleted: %s", len(deleted_keys), ", ".join(deleted_keys))
 
         if changed_data:
             changed = {}
@@ -121,7 +121,7 @@ class ConfigClient:
                 self._configs.update(changed)
 
             self._listener.notify(changed)
-            logger.info("[ConfigClient] %d configs changed", len(changed))
+            logger.info("[ConfigClient] %d configs changed: %s", len(changed), ", ".join(changed.keys()))
 
     def _apply_configs(self, data: dict) -> None:
         with self._lock:

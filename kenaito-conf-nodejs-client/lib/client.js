@@ -38,7 +38,7 @@ export class ConfigClient {
       const cached = this.cache.read();
       if (cached) {
         this.applyConfigs(cached);
-        console.info('[ConfigClient] loaded', Object.keys(this.configs).length, 'configs from cache');
+        console.error('[ConfigClient] loaded', Object.keys(this.configs).length, 'configs from cache');
       } else {
         throw new Error(`fetch configs failed and no cache: ${err.message}`);
       }
@@ -90,7 +90,7 @@ export class ConfigClient {
 
     this.cache.write(data);
     this.applyConfigs(data);
-    console.info('[ConfigClient] fetched', Object.keys(this.configs).length, 'configs');
+    console.error('[ConfigClient] fetched', Object.keys(this.configs).length, 'configs');
   }
 
   async fetchChanged() {
@@ -134,7 +134,7 @@ export class ConfigClient {
       for (const key of deletedKeys) {
         delete this.configs[key];
       }
-      console.info('[ConfigClient]', deletedKeys.length, 'configs deleted');
+      console.error('[ConfigClient]', deletedKeys.length, 'configs deleted:', deletedKeys.join(', '));
       delete changedData['deletedKeys'];
     }
 
@@ -145,7 +145,7 @@ export class ConfigClient {
 
     Object.assign(this.configs, changed);
     this.listener.notify(changed);
-    console.info('[ConfigClient]', Object.keys(changed).length, 'configs changed');
+    console.error('[ConfigClient]', Object.keys(changed).length, 'configs changed:', Object.keys(changed).join(', '));
   }
 
   applyConfigs(data) {

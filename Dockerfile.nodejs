@@ -1,27 +1,12 @@
-# Build stage
-FROM node:18-alpine AS build
-
-WORKDIR /src
-
-# Copy client library
-COPY kenaito-conf-nodejs-client/ ./kenaito-conf-nodejs-client/
-
-# Copy demo project
-COPY kenaito-conf-nodejs-client-demo/ ./kenaito-conf-nodejs-client-demo/
-
-# Install client locally, then demo dependencies
-WORKDIR /src/kenaito-conf-nodejs-client
-RUN npm link
-
-WORKDIR /src/kenaito-conf-nodejs-client-demo
-RUN npm link kenaito-conf && npm install
-
-# Runtime stage
 FROM node:18-alpine
 
 WORKDIR /app
-COPY --from=build /src/kenaito-conf-nodejs-client-demo .
+
+COPY kenaito-conf-nodejs-client/ ./kenaito-conf-nodejs-client/
+COPY kenaito-conf-nodejs-client-demo/ ./kenaito-conf-nodejs-client-demo/
+
+WORKDIR /app/kenaito-conf-nodejs-client-demo
+RUN npm install ../kenaito-conf-nodejs-client && npm install
 
 EXPOSE 8083
-
 CMD ["node", "app.js"]

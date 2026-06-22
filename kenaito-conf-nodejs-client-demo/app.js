@@ -15,7 +15,7 @@ function onConfigChanged(changed) {
   for (const [k, v] of Object.entries(changed)) {
     if (k in configValues) {
       configValues[k] = v;
-      console.log(`config updated: ${k} = ${v}`);
+      console.error(`config updated: ${k} = ${v}`);
     }
   }
 }
@@ -57,13 +57,13 @@ async function main() {
         configValues[k] = remote[k];
       }
     }
-    console.info(`loaded ${Object.keys(remote).length} configs from remote`);
+    console.error(`loaded ${Object.keys(remote).length} configs from remote`);
   } catch (err) {
     console.error('failed to init config client, using local defaults:', err);
   }
 
   app.listen(port, '0.0.0.0', () => {
-    console.info(`server started on port ${port}`);
+    console.error(`server started on port ${port}`);
   });
 }
 

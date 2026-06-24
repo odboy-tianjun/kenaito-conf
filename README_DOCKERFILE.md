@@ -4,7 +4,7 @@
 
 所有命令均在项目根目录执行。
 
-## Go 客户端
+## Go 客户端（测试通过）
 
 ```bash
 docker build -f Dockerfile.go -t kenaito-conf-go-demo .
@@ -16,7 +16,7 @@ docker run -it --rm \
   kenaito-conf-go-demo
 ```
 
-## Node.js 客户端
+## Node.js 客户端（测试通过）
 
 ```bash
 docker build -f Dockerfile.nodejs -t kenaito-conf-nodejs-demo .

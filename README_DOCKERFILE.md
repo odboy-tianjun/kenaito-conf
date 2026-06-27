@@ -39,7 +39,7 @@ curl http://localhost:8083/health
 docker stop nodejs-demo
 ```
 
-## Python 客户端
+## Python 客户端（测试通过）
 
 ```bash
 docker build -f Dockerfile.python -t kenaito-conf-python-demo .

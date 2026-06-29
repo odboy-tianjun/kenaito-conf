@@ -1,1 +1,0 @@
-{"config.test": "sdasdas是大大6667777888", "database.host": "127.0.0.1", "database.name": "kenaito_conf", "database.password": "123456789", "database.port": "3306", "jwt.expireHours": "24", "jwt.secret": "kenaito-conf-jwt-secret-2026", "latest.fetch.timestamp": "1792133044244", "server.port": "8084"}

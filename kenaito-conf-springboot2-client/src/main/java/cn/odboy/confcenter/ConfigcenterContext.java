@@ -333,6 +333,8 @@ public class ConfigcenterContext {
             result = LocalCacheUtils.read();
         } else {
             LocalCacheUtils.write(result);
+            int configCount = result.size();
+            logger.info("[ConfigClient] fetched {} configs", configCount);
         }
         return result;
     }
@@ -410,7 +412,7 @@ public class ConfigcenterContext {
 
             // Refresh @Value and @ConfigurationProperties fields
             logger.info("[RefreshScope] Calling refreshDynamicConfigFields()...");
-            refreshDynamicConfigFields();
+            refreshDynamicConfigFields(updateConfig.keySet());
             logger.info("[RefreshScope] refreshDynamicConfigFields() completed");
         }
     }
@@ -448,13 +450,13 @@ public class ConfigcenterContext {
             }
         }
         // Refresh @Value and @ConfigurationProperties fields
-        refreshDynamicConfigFields();
+        refreshDynamicConfigFields(new HashSet<>(keys));
     }
 
-    private void refreshDynamicConfigFields() {
+    private void refreshDynamicConfigFields(Set<String> changedKeys) {
         if (applicationContext != null) {
             try {
-                logger.info("[RefreshScope] Starting dynamic config field refresh...");
+                logger.info("[RefreshScope] Starting dynamic config field refresh for keys: {}", String.join(", ", changedKeys));
                 StandardEnvironment env = (StandardEnvironment) applicationContext.getEnvironment();
                 // 直接创建 RefreshScopeRegistry 并注册为 BeanPostProcessor
                 RefreshScopeRegistry registry = new RefreshScopeRegistry(env);
@@ -474,8 +476,8 @@ public class ConfigcenterContext {
                 configPropsCount = registry.getConfigPropsCount();
                 logger.info("[RefreshScope] Recorded {} @Value fields and {} @ConfigurationProperties beans", valueFieldCount, configPropsCount);
 
-                // 刷新
-                registry.refresh();
+                // 刷新（只刷新受影响的字段）
+                registry.refresh(changedKeys);
                 logger.info("[RefreshScope] RefreshScopeRegistry.refresh() completed, refreshed {} @Value fields and {} @ConfigurationProperties beans", registry.getValueFieldCount(), registry.getConfigPropsCount());
             } catch (Exception e) {
                 logger.warn("[RefreshScope] RefreshScopeRegistry.refresh() error, msg:{}", e.getMessage(), e);

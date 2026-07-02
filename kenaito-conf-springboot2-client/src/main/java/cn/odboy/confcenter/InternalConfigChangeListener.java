@@ -72,7 +72,10 @@ public class InternalConfigChangeListener {
 									logger.info("[ConfigClient] {} configs deleted: {}", deletedKeys.length, String.join(", ", deletedKeys));
 								}
 							}
-							if (!data.isEmpty()) context.updateConfig(data);
+							if (!data.isEmpty()) {
+								context.updateConfig(data);
+								logger.info("[ConfigClient] {} configs changed: {}", data.size(), String.join(", ", data.keySet()));
+							}
 						}
 					}
 				} catch (Exception e) {

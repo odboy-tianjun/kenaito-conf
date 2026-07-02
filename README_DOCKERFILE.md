@@ -62,7 +62,7 @@ curl http://localhost:8082/health
 docker stop python-demo
 ```
 
-## .NET 客户端
+## .NET 客户端（测试通过）
 
 ```bash
 docker build -f Dockerfile.dotnet -t kenaito-conf-dotnet-demo .

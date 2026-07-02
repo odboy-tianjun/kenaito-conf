@@ -1,5 +1,5 @@
 # Build stage
-FROM maven:3.9-eclipse-temurin-8 AS build
+FROM registry.cn-shanghai.aliyuncs.com/odboy/kenaito-cicd:runtime-maven3-jdk21 AS build
 
 WORKDIR /src
 
@@ -9,12 +9,13 @@ WORKDIR /src/kenaito-conf-springboot2-client
 RUN mvn clean install -DskipTests
 
 # Copy demo project and build
+WORKDIR /src
 COPY kenaito-conf-springboot2-client-demo/ ./kenaito-conf-springboot2-client-demo/
 WORKDIR /src/kenaito-conf-springboot2-client-demo
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:8-jre
+FROM registry.cn-shanghai.aliyuncs.com/odboy/kenaito-cicd:runtime-jdk8
 
 WORKDIR /app
 COPY --from=build /src/kenaito-conf-springboot2-client-demo/target/*.jar app.jar

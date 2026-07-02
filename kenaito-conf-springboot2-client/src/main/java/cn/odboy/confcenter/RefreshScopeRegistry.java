@@ -3,6 +3,7 @@ package cn.odboy.confcenter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,27 +61,29 @@ public class RefreshScopeRegistry implements BeanPostProcessor {
 	}
 
 	/**
-	 * Refresh all @Value fields and @ConfigurationProperties beans
+	 * Refresh only @Value fields and @ConfigurationProperties beans that are affected by changed keys
 	 */
-	public void refresh() {
-		refreshValueFields();
-		refreshConfigPropsBeans();
+	public void refresh(Set<String> changedKeys) {
+		refreshValueFields(changedKeys);
+		refreshConfigPropsBeans(changedKeys);
 	}
 
-	private void refreshValueFields() {
+	private void refreshValueFields(Set<String> changedKeys) {
 		for (ValueFieldHolder holder : valueFields) {
-			try {
-				holder.refresh(environment);
-			} catch (Exception e) {
-				// ignore refresh errors
+			if (changedKeys.contains(holder.key)) {
+				try {
+					holder.refresh(environment);
+				} catch (Exception e) {
+					// ignore refresh errors
+				}
 			}
 		}
 	}
 
-	private void refreshConfigPropsBeans() {
+	private void refreshConfigPropsBeans(Set<String> changedKeys) {
 		for (ConfigPropsHolder holder : configPropsBeans) {
 			try {
-				holder.refresh(environment);
+				holder.refresh(environment, changedKeys);
 			} catch (Exception e) {
 				// ignore refresh errors
 			}
@@ -149,24 +152,27 @@ public class RefreshScopeRegistry implements BeanPostProcessor {
 			this.bean = bean;
 		}
 
-		void refresh(Environment env) {
+		void refresh(Environment env, Set<String> changedKeys) {
 			Class<?> clazz = bean.getClass();
 			ConfigurationProperties anno = clazz.getAnnotation(ConfigurationProperties.class);
 			if (anno != null) {
 				String prefix = anno.prefix();
-				bindProperties(bean, prefix, env);
+				bindProperties(bean, prefix, env, changedKeys);
 			}
 		}
 
-		private void bindProperties(Object bean, String prefix, Environment env) {
+		private void bindProperties(Object bean, String prefix, Environment env, Set<String> changedKeys) {
 			try {
 				Class<?> clazz = bean.getClass();
 				for (Field field : getAllDeclaredFields(clazz)) {
 					String propertyName = prefix + "." + camelToKebab(field.getName());
-					String value = env.getProperty(propertyName);
-					if (value != null) {
-						field.setAccessible(true);
-						field.set(bean, convertType(field.getType(), value));
+					// Only refresh if this property key is in changedKeys
+					if (changedKeys.contains(propertyName)) {
+						String value = env.getProperty(propertyName);
+						if (value != null) {
+							field.setAccessible(true);
+							field.set(bean, convertType(field.getType(), value));
+						}
 					}
 				}
 			} catch (Exception e) {

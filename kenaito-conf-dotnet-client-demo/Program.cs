@@ -2,12 +2,13 @@ using Kenaito.Conf.Client;
 
 var config = new Config
 {
-    BaseUrl = "http://localhost:8080",
-    AppName = "kenaito-springboot-demo",
-    Env = "daily",
-    Version = "latest",
-    SyncInterval = 10,
-    CacheDir = "."
+    BaseUrl = Environment.GetEnvironmentVariable("KENAITO_BASE_URL") ?? "http://localhost:8080",
+    AppName = Environment.GetEnvironmentVariable("KENAITO_APP_NAME") ?? "kenaito-springboot-demo",
+    Env = Environment.GetEnvironmentVariable("KENAITO_ENV") ?? "daily",
+    Version = Environment.GetEnvironmentVariable("KENAITO_VERSION") ?? "latest",
+    SyncInterval = int.TryParse(Environment.GetEnvironmentVariable("KENAITO_SYNC_INTERVAL"), out var si) ? si : 10,
+    CacheDir = Environment.GetEnvironmentVariable("KENAITO_CACHE_DIR") ?? ".",
+    Token = Environment.GetEnvironmentVariable("KENAITO_TOKEN")
 };
 
 var client = new Client(config);

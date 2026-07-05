@@ -74,7 +74,7 @@ docker run -it --rm \
   kenaito-conf-dotnet-demo
 ```
 
-## Spring Boot 2 客户端
+## Spring Boot 2 客户端（测试通过）
 
 ```bash
 docker build -f Dockerfile.springboot2 -t kenaito-conf-springboot2-demo .
@@ -99,19 +99,20 @@ docker stop springboot2-demo
 
 ## 环境变量说明
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `KENAITO_BASE_URL` | 配置中心地址 | `http://localhost:8080` |
-| `KENAITO_APP_NAME` | 应用名称 | `kenaito-springboot-demo` |
-| `KENAITO_ENV` | 环境标识 | `daily` |
-| `KENAITO_VERSION` | 配置版本 | `latest` |
-| `KENAITO_TOKEN` | 应用 Token | 空 |
-| `KENAITO_SYNC_INTERVAL` | 同步间隔（秒） | `10` |
-| `KENAITO_CACHE_DIR` | 缓存目录 | `.` |
+| 变量名                     | 说明       | 默认值                       |
+|-------------------------|----------|---------------------------|
+| `KENAITO_BASE_URL`      | 配置中心地址   | `http://localhost:8080`   |
+| `KENAITO_APP_NAME`      | 应用名称     | `kenaito-springboot-demo` |
+| `KENAITO_ENV`           | 环境标识     | `daily`                   |
+| `KENAITO_VERSION`       | 配置版本     | `latest`                  |
+| `KENAITO_TOKEN`         | 应用 Token | 空                         |
+| `KENAITO_SYNC_INTERVAL` | 同步间隔（秒）  | `10`                      |
+| `KENAITO_CACHE_DIR`     | 缓存目录     | `.`                       |
 
 ## 注意事项
 
-1. **host.docker.internal**：容器内访问宿主机服务时使用 `host.docker.internal:8080`，Linux 系统可能需要添加 `--add-host host.docker.internal:host-gateway`
+1. **host.docker.internal**：容器内访问宿主机服务时使用 `host.docker.internal:8080`，Linux 系统可能需要添加
+   `--add-host host.docker.internal:host-gateway`
 
 2. **网络模式**：如果配置中心也运行在 Docker 中，建议使用自定义网络：
    ```bash
@@ -123,8 +124,8 @@ docker stop springboot2-demo
 3. **配置缓存**：各客户端会在运行目录生成 `config-cache.json` 文件，容器重启后可从缓存加载配置
 
 4. **日志查看**：
-   - Go/.NET：直接输出到 stdout
-   - Node.js/Python/Spring Boot：使用各自日志框架
+    - Go/.NET：直接输出到 stdout
+    - Node.js/Python/Spring Boot：使用各自日志框架
 
 ## 测试配置变更
 

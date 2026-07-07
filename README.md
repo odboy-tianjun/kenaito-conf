@@ -6,7 +6,8 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x & 3.x）/ Python / Node.js / PHP / .NET / C / C++ / Lua / Kotlin / Rust / Ruby
+- **客户端**: Go / Java（Spring Boot 2.x & 3.x）/ Python / Node.js / Perl / PHP / .NET / C / C++ / Lua / Kotlin / Rust /
+  Ruby
 
 ## 项目结构
 
@@ -22,6 +23,8 @@ kenaito-conf/
 ├── kenaito-conf-python-client-demo/     # Python 客户端示例（端口 8082）
 ├── kenaito-conf-nodejs-client/          # Node.js 客户端 SDK（Node.js 18+）
 ├── kenaito-conf-nodejs-client-demo/     # Node.js 客户端示例（端口 8083）
+├── kenaito-conf-perl-client/            # Perl 客户端 SDK（Perl 5.16+）
+├── kenaito-conf-perl-client-demo/       # Perl 客户端示例
 ├── kenaito-conf-php-client/             # （未支持）PHP 客户端 SDK（PHP 8.0+）
 ├── kenaito-conf-php-client-demo/        # （未支持）PHP 客户端示例
 ├── kenaito-conf-dotnet-client/          # .NET 客户端 SDK（.NET 6.0+）
@@ -262,6 +265,60 @@ const allConfigs = client.getAll();
 
 // 停止
 client.stop();
+```
+
+### Perl 客户端
+
+适用于 Perl 5.16+ 项目。
+
+**1. 安装**
+
+```bash
+cd kenaito-conf-perl-client
+cpanm .
+```
+
+或在项目中直接引入 lib 路径：
+
+```perl
+use lib '/path/to/kenaito-conf-perl-client/lib';
+```
+
+**2. 使用**
+
+```perl
+use Kenaito::Conf::Config;
+use Kenaito::Conf::Client;
+
+my $cfg = Kenaito::Conf::Config->new(
+    base_url      => 'http://localhost:8080',
+    app_name      => 'my-app',
+    env           => 'daily',
+    sync_interval => 10,
+);
+
+my $client = Kenaito::Conf::Client->new(config => $cfg);
+
+# 监听配置变更
+$client->on_change(sub {
+    my ($changed) = @_;
+    for my $k (keys %$changed) {
+        print "config changed: $k = $changed->{$k}\n";
+    }
+});
+
+# 启动客户端（拉取配置）
+$client->start();
+
+# 获取配置
+my $value = $client->get('database.host');
+my $all   = $client->get_all();
+
+# 手动同步一次
+$client->sync_once();
+
+# 停止
+$client->stop();
 ```
 
 ## API 概览

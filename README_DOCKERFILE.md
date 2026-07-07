@@ -74,6 +74,18 @@ docker run -it --rm \
   kenaito-conf-dotnet-demo
 ```
 
+## Perl 客户端（测试通过）
+
+```bash
+docker build -f Dockerfile.perl -t kenaito-conf-perl-demo .
+
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-perl-demo
+```
+
 ## Spring Boot 2 客户端（测试通过）
 
 ```bash

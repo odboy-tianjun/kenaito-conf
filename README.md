@@ -6,7 +6,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x & 3.x）/ Python / Node.js / Perl / PHP / .NET / C / C++ / Lua / Kotlin / Rust /
+- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / PHP / .NET / C / C++ / Lua / Kotlin / Rust /
   Ruby
 
 ## 项目结构

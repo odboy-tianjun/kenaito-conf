@@ -99,7 +99,7 @@ npm run dev
 ### Go 客户端
 
 ```go
-import "kenaito-conf/kenaito-conf-go-client"
+import client "kenaito-conf/go-client"
 
 cfg := &client.Config{
 BaseURL:      "http://localhost:8080",

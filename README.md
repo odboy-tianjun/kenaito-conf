@@ -374,5 +374,4 @@ $client->stop();
 |------|----------------------------|--------|
 | POST | `/api/fetchAllConfigs`     | 全量拉取配置 |
 | POST | `/api/fetchChangedConfigs` | 增量拉取变更 |
-| GET  | `/api/ping`                | 健康检查   |
 

@@ -6,8 +6,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / PHP / .NET / C / C++ / Lua / Kotlin / Rust /
-  Ruby
+- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C / C++ / Kotlin / Rust / Ruby
 
 ## 项目结构
 
@@ -33,8 +32,8 @@ kenaito-conf/
 ├── kenaito-conf-c-client-demo/          # （未支持）C 客户端示例
 ├── kenaito-conf-cpp-client/             # （未支持）C++ 客户端 SDK（libcurl + OpenSSL）
 ├── kenaito-conf-cpp-client-demo/        # （未支持）C++ 客户端示例
-├── kenaito-conf-lua-client/             # （未支持）Lua 客户端 SDK（Lua 5.3+）
-├── kenaito-conf-lua-client-demo/        # （未支持）Lua 客户端示例
+├── kenaito-conf-lua-client/             # Lua 客户端 SDK（Lua 5.1+）
+├── kenaito-conf-lua-client-demo/        # Lua 客户端示例
 ├── kenaito-conf-kotlin-client/          # （未支持）Kotlin 客户端 SDK（Kotlin 1.9+）
 ├── kenaito-conf-kotlin-client-demo/     # （未支持）Kotlin 客户端示例
 ├── kenaito-conf-rust-client/            # （未支持）Rust 客户端 SDK（Rust 1.70+）
@@ -319,6 +318,58 @@ $client->sync_once();
 
 # 停止
 $client->stop();
+```
+
+### Lua 客户端
+
+适用于 Lua 5.1+ 项目。
+
+**1. 安装**
+
+```bash
+cd kenaito-conf-lua-client
+luarocks make
+```
+
+或手动添加模块路径：
+
+```lua
+package.path = package.path .. ";/path/to/kenaito-conf-lua-client/?.lua"
+```
+
+**2. 使用**
+
+```lua
+local kenaito = require("kenaito_conf")
+
+local config = kenaito.Config.new({
+    base_url = "http://localhost:8080",
+    app_name = "my-app",
+    env = "daily",
+    sync_interval = 10,
+})
+
+local client = kenaito.Client.new({ config = config })
+
+-- 监听配置变更
+client:on_change(function(changed)
+    for k, v in pairs(changed) do
+        print("config changed: " .. k .. " = " .. v)
+    end
+end)
+
+-- 启动客户端（拉取配置）
+client:start()
+
+-- 获取配置
+local value = client:get("database.host")
+local all = client:get_all()
+
+-- 手动同步一次
+client:sync_once()
+
+-- 停止
+client:stop()
 ```
 
 ## API 概览

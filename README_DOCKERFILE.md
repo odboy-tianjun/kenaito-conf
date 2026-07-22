@@ -86,7 +86,7 @@ docker run -it --rm \
   kenaito-conf-perl-demo
 ```
 
-## Lua 客户端
+## Lua 客户端（测试通过）
 
 ```bash
 docker build -f Dockerfile.lua -t kenaito-conf-lua-demo .

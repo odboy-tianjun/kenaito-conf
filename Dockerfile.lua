@@ -1,10 +1,14 @@
 # Build stage
-FROM lua:5.4 AS build
+FROM alpine:3.20 AS build
 
 WORKDIR /src
 
-# Install build dependencies
-RUN apk add --no-cache git
+# Install Lua and dependencies
+RUN apk add --no-cache lua5.4 lua5.4-dev luarocks5.4 git build-base
+
+# Create symlinks
+RUN ln -sf /usr/bin/lua5.4 /usr/bin/lua && \
+    ln -sf /usr/bin/luarocks-5.4 /usr/bin/luarocks
 
 # Copy client library
 COPY kenaito-conf-lua-client/ ./kenaito-conf-lua-client/
@@ -19,9 +23,15 @@ WORKDIR /src
 COPY kenaito-conf-lua-client-demo/ ./kenaito-conf-lua-client-demo/
 
 # Runtime stage
-FROM lua:5.4
+FROM alpine:3.20
 
 WORKDIR /app
+
+# Install Lua runtime
+RUN apk add --no-cache lua5.4
+
+# Create symlink
+RUN ln -sf /usr/bin/lua5.4 /usr/bin/lua
 
 # Copy Lua modules from build stage
 COPY --from=build /usr/local/share/lua/5.4 /usr/local/share/lua/5.4

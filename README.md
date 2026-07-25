@@ -6,7 +6,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C / C++ / Kotlin / Rust / Ruby
+- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C / C++ / Rust / Ruby
 
 ## 项目结构
 
@@ -34,8 +34,6 @@ kenaito-conf/
 ├── kenaito-conf-cpp-client-demo/        # （未支持）C++ 客户端示例
 ├── kenaito-conf-lua-client/             # Lua 客户端 SDK（Lua 5.1+）
 ├── kenaito-conf-lua-client-demo/        # Lua 客户端示例
-├── kenaito-conf-kotlin-client/          # （未支持）Kotlin 客户端 SDK（Kotlin 1.9+）
-├── kenaito-conf-kotlin-client-demo/     # （未支持）Kotlin 客户端示例
 ├── kenaito-conf-rust-client/            # （未支持）Rust 客户端 SDK（Rust 1.70+）
 ├── kenaito-conf-rust-client-demo/       # （未支持）Rust 客户端示例
 ├── kenaito-conf-ruby-client/            # （未支持）Ruby 客户端 SDK（Ruby 2.7+）

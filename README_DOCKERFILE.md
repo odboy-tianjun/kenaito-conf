@@ -98,6 +98,18 @@ docker run -it --rm \
   kenaito-conf-lua-demo
 ```
 
+## PHP 客户端
+
+```bash
+docker build -f Dockerfile.php -t kenaito-conf-php-demo .
+
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-php-demo
+```
+
 ## Spring Boot 2 客户端（测试通过）
 
 ```bash

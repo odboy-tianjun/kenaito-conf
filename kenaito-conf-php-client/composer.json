@@ -1,0 +1,23 @@
+{
+    "name": "kenaito/conf-client",
+    "description": "Kenaito Config Center PHP Client",
+    "version": "1.0.3",
+    "type": "library",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "odboy",
+            "email": "tianjun@odboy.cn"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kenaito\\Conf\\": "src/"
+        }
+    }
+}

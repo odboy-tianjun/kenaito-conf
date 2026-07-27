@@ -24,20 +24,12 @@ kenaito-conf/
 ├── kenaito-conf-nodejs-client-demo/     # Node.js 客户端示例（端口 8083）
 ├── kenaito-conf-perl-client/            # Perl 客户端 SDK（Perl 5.16+）
 ├── kenaito-conf-perl-client-demo/       # Perl 客户端示例
-├── kenaito-conf-php-client/             # （未支持）PHP 客户端 SDK（PHP 8.0+）
-├── kenaito-conf-php-client-demo/        # （未支持）PHP 客户端示例
+├── kenaito-conf-php-client/             # PHP 客户端 SDK（PHP 7.4+）
+├── kenaito-conf-php-client-demo/        # PHP 客户端示例
 ├── kenaito-conf-dotnet-client/          # .NET 客户端 SDK（.NET 6.0+）
 ├── kenaito-conf-dotnet-client-demo/     # .NET 客户端示例
-├── kenaito-conf-c-client/               # （未支持）C 客户端 SDK（libcurl + OpenSSL）
-├── kenaito-conf-c-client-demo/          # （未支持）C 客户端示例
-├── kenaito-conf-cpp-client/             # （未支持）C++ 客户端 SDK（libcurl + OpenSSL）
-├── kenaito-conf-cpp-client-demo/        # （未支持）C++ 客户端示例
 ├── kenaito-conf-lua-client/             # Lua 客户端 SDK（Lua 5.1+）
-├── kenaito-conf-lua-client-demo/        # Lua 客户端示例
-├── kenaito-conf-rust-client/            # （未支持）Rust 客户端 SDK（Rust 1.70+）
-├── kenaito-conf-rust-client-demo/       # （未支持）Rust 客户端示例
-├── kenaito-conf-ruby-client/            # （未支持）Ruby 客户端 SDK（Ruby 2.7+）
-└── kenaito-conf-ruby-client-demo/       # （未支持）Ruby 客户端示例
+└── kenaito-conf-lua-client-demo/        # Lua 客户端示例
 ```
 
 ## 快速开始
@@ -368,6 +360,61 @@ client:sync_once()
 
 -- 停止
 client:stop()
+```
+
+### PHP 客户端
+
+适用于 PHP 7.4+ 项目。
+
+**1. 安装**
+
+```bash
+cd kenaito-conf-php-client
+composer install
+```
+
+或在项目中引入：
+
+```bash
+composer require kenaito/conf-client
+```
+
+**2. 使用**
+
+```php
+require_once 'vendor/autoload.php';
+
+use Kenaito\Conf\Config;
+use Kenaito\Conf\Client;
+
+$config = new Config([
+    'baseUrl' => 'http://localhost:8080',
+    'appName' => 'my-app',
+    'env' => 'daily',
+    'syncInterval' => 10,
+]);
+
+$client = new Client($config);
+
+// 监听配置变更
+$client->onChange(function(array $changed) {
+    foreach ($changed as $key => $value) {
+        echo "config changed: $key = $value\n";
+    }
+});
+
+// 启动客户端（拉取配置）
+$client->start();
+
+// 获取配置
+$value = $client->get('database.host');
+$all = $client->getAll();
+
+// 手动同步一次
+$client->syncOnce();
+
+// 停止
+$client->stop();
 ```
 
 ## API 概览

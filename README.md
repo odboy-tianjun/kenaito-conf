@@ -1,5 +1,7 @@
 # Kenaito Config Center
 
+[English](README_EN.md) | 中文
+
 基于 Go 重构的集中配置管理平台，支持多应用、多环境、多业务组的配置管理与分发。
 
 ## 技术栈

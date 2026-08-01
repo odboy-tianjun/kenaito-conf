@@ -1,5 +1,7 @@
 # Kenaito Config Center PHP Client
 
+[English](README_EN.md) | 中文
+
 PHP 客户端 SDK，适用于 PHP 7.4+ 项目。
 
 ## 安装

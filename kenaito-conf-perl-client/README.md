@@ -1,5 +1,7 @@
 # Kenaito Config Center Perl Client
 
+[English](README_EN.md) | 中文
+
 Perl 客户端 SDK，适用于 Perl 5.16+ 项目。
 
 ## 安装

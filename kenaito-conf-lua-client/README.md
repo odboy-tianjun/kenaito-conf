@@ -1,5 +1,7 @@
 # Kenaito Config Center Lua Client
 
+[English](README_EN.md) | 中文
+
 Lua 客户端 SDK，适用于 Lua 5.1+ 项目。
 
 ## 安装

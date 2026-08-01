@@ -1,5 +1,7 @@
 # Kenaito Config Center .NET Client
 
+[English](README_EN.md) | 中文
+
 kenaito-conf 配置中心的 .NET 客户端 SDK。
 
 ## 安装

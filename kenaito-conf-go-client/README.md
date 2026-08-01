@@ -1,5 +1,7 @@
 # Kenaito Config Center Go Client
 
+[English](README_EN.md) | 中文
+
 Go 语言的配置中心客户端 SDK。
 
 ## 功能特性

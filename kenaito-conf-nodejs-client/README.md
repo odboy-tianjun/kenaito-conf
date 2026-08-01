@@ -1,5 +1,7 @@
 # Kenaito Config Center Node.js Client
 
+[English](README_EN.md) | 中文
+
 ## 安装
 
 ### 安装到本地仓库（推荐）

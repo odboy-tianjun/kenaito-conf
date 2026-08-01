@@ -1,5 +1,7 @@
 # Kenaito Config Center Python Client
 
+[English](README_EN.md) | 中文
+
 ## 安装
 
 ```bash

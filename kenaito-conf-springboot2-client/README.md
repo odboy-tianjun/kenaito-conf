@@ -1,5 +1,7 @@
 # Kenaito Config Center Spring Boot 2 Client
 
+[English](README_EN.md) | 中文
+
 适用于 Spring Boot 2.x 应用的配置中心客户端，支持配置自动刷新和 `@Value` 注解动态更新。
 
 ## 安装

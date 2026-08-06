@@ -2,6 +2,13 @@
 
 Perl client SDK for the Kenaito Config Center, suitable for Perl 5.16+ projects.
 
+## Features
+
+- Fetch application configs from the config center
+- Periodic config sync
+- Config change callback listener
+- Local file cache (fallback when config center is unavailable)
+
 ## Installation
 
 ### Install from Local

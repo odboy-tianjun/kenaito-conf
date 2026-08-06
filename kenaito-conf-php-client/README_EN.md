@@ -2,6 +2,13 @@
 
 PHP client SDK for the Kenaito Config Center, suitable for PHP 7.4+ projects.
 
+## Features
+
+- Fetch application configs from the config center
+- Periodic config sync
+- Config change callback listener
+- Local file cache (fallback when config center is unavailable)
+
 ## Installation
 
 ### Using Composer (Recommended)

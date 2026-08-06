@@ -2,6 +2,13 @@
 
 Config center client for Spring Boot 2.x applications, supporting automatic config refresh and dynamic `@Value` annotation updates.
 
+## Features
+
+- Fetch application configs from the config center
+- Periodic config sync
+- Automatic `@Value` annotation refresh
+- Local file cache (fallback when config center is unavailable)
+
 ## Installation
 
 ### Maven Dependency
@@ -156,6 +163,7 @@ Visit `http://localhost:8083/config` to view current configs.
 2. **Config Priority**: Remote config > Local config > Default value
 3. **Log Masking**: Configs containing sensitive keys are automatically masked in logs (first half + `****`)
 4. **Network Errors**: Sync failures are logged as errors without affecting normal application operation
+5. **Local Fallback**: The client creates a `config-cache.log` file in the local cache directory, automatically loading configs from cache when the config center is unavailable
 
 ## Changelog
 

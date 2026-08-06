@@ -2,6 +2,13 @@
 
 Node.js client SDK for the Kenaito Config Center.
 
+## Features
+
+- Fetch application configs from the config center
+- Periodic config sync
+- Config change callback listener
+- Local file cache (fallback when config center is unavailable)
+
 ## Installation
 
 ### Install to Local Repository (Recommended)

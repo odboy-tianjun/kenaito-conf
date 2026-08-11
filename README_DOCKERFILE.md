@@ -4,29 +4,37 @@
 
 所有命令均在项目根目录执行。
 
-## Go 客户端（测试通过）
+## Go 客户端
 
 ```bash
 docker build -f Dockerfile.go -t kenaito-conf-go-demo .
 
+# linux or mac
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
-  kenaito-conf-go-demo
+  kenaito-conf-golang-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-golang-demo
 ```
 
-## Node.js 客户端（测试通过）
+## Node.js 客户端
 
 ```bash
 docker build -f Dockerfile.nodejs -t kenaito-conf-nodejs-demo .
 
+# linux or mac
 docker run -d --rm --name nodejs-demo \
   -p 8083:8083 \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-nodejs-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-nodejs-demo
 
 # 查看日志
 docker logs -f nodejs-demo
@@ -39,17 +47,21 @@ curl http://localhost:8083/health
 docker stop nodejs-demo
 ```
 
-## Python 客户端（测试通过）
+## Python 客户端
 
 ```bash
 docker build -f Dockerfile.python -t kenaito-conf-python-demo .
 
+# linux or mac
 docker run -d --rm --name python-demo \
   -p 8082:8082 \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-python-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-python-demo
 
 # 查看日志
 docker logs -f python-demo
@@ -62,67 +74,85 @@ curl http://localhost:8082/health
 docker stop python-demo
 ```
 
-## .NET 客户端（测试通过）
+## .NET 客户端
 
 ```bash
 docker build -f Dockerfile.dotnet -t kenaito-conf-dotnet-demo .
 
+# linux or mac
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-dotnet-demo
+
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-dotnet-demo
 ```
 
-## Perl 客户端（测试通过）
+## Perl 客户端
 
 ```bash
 docker build -f Dockerfile.perl -t kenaito-conf-perl-demo .
 
+# linux or mac
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-perl-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-perl-demo
 ```
 
-## Lua 客户端（测试通过）
+## Lua 客户端
 
 ```bash
 docker build -f Dockerfile.lua -t kenaito-conf-lua-demo .
 
+# linux or mac
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-lua-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-lua-demo
 ```
 
-## PHP 客户端（测试通过）
+## PHP 客户端
 
 ```bash
 docker build -f Dockerfile.php -t kenaito-conf-php-demo .
 
+# linux or mac
 docker run -it --rm \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-php-demo
-  
+
+# windows
 docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-php-demo
 ```
 
-## Spring Boot 2 客户端（测试通过）
+## Spring Boot 2 客户端
 
 ```bash
 docker build -f Dockerfile.springboot2 -t kenaito-conf-springboot2-demo .
 
+# linux or mac
 docker run -d --rm --name springboot2-demo \
   -p 8081:8081 \
   -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-springboot2-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-springboot2-demo
 
 # 查看日志
 docker logs -f springboot2-demo
@@ -133,6 +163,38 @@ curl http://localhost:8081/health
 
 # 停止
 docker stop springboot2-demo
+```
+
+## C++ 客户端
+
+```bash
+docker build -f Dockerfile.cpp -t kenaito-conf-cpp-demo .
+
+# linux or mac
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-cpp-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-cpp-demo
+```
+
+## Rust 客户端（待测试）
+
+```bash
+docker build -f Dockerfile.rust -t kenaito-conf-rust-demo .
+
+# linux or mac
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-rust-demo
+  
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-rust-demo
 ```
 
 ## 环境变量说明

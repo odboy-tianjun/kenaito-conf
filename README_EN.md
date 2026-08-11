@@ -29,7 +29,11 @@ kenaito-conf/
 ├── kenaito-conf-dotnet-client/          # .NET client SDK (.NET 6.0+)
 ├── kenaito-conf-dotnet-client-demo/     # .NET client demo
 ├── kenaito-conf-lua-client/             # Lua client SDK (Lua 5.1+)
-└── kenaito-conf-lua-client-demo/        # Lua client demo
+├── kenaito-conf-lua-client-demo/        # Lua client demo
+├── kenaito-conf-cpp-client/             # C++ client SDK (C++11+)
+├── kenaito-conf-cpp-client-demo/        # C++ client demo
+├── kenaito-conf-rust-client/            # Rust client SDK (Rust 2021+)
+└── kenaito-conf-rust-client-demo/       # Rust client demo
 ```
 
 ## Quick Start

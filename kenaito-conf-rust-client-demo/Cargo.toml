@@ -1,0 +1,8 @@
+[package]
+name = "kenaito-conf-rust-client-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+kenaito-conf-client = { path = "../kenaito-conf-rust-client" }
+ctrlc = "3.4"

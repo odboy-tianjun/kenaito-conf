@@ -1,0 +1,29 @@
+# Build stage
+FROM rust:1.88 AS build
+
+WORKDIR /src
+
+# Copy client library
+COPY kenaito-conf-rust-client/ ./kenaito-conf-rust-client/
+
+# Copy demo project
+COPY kenaito-conf-rust-client-demo/ ./kenaito-conf-rust-client-demo/
+
+# Build
+WORKDIR /src/kenaito-conf-rust-client-demo
+RUN cargo build --release
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy binary
+COPY --from=build /src/kenaito-conf-rust-client-demo/target/release/kenaito-conf-rust-client-demo /app/demo
+
+ENTRYPOINT ["./demo"]

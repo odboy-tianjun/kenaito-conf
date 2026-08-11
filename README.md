@@ -31,7 +31,11 @@ kenaito-conf/
 ├── kenaito-conf-dotnet-client/          # .NET 客户端 SDK（.NET 6.0+）
 ├── kenaito-conf-dotnet-client-demo/     # .NET 客户端示例
 ├── kenaito-conf-lua-client/             # Lua 客户端 SDK（Lua 5.1+）
-└── kenaito-conf-lua-client-demo/        # Lua 客户端示例
+├── kenaito-conf-lua-client-demo/        # Lua 客户端示例
+├── kenaito-conf-cpp-client/             # C++ 客户端 SDK（C++11+）
+├── kenaito-conf-cpp-client-demo/        # C++ 客户端示例
+├── kenaito-conf-rust-client/            # Rust 客户端 SDK（Rust 2021+）
+└── kenaito-conf-rust-client-demo/       # Rust 客户端示例
 ```
 
 ## 快速开始

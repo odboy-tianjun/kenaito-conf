@@ -265,7 +265,7 @@ impl Client {
                 for key in &deleted_keys {
                     configs.remove(*key);
                 }
-                eprintln!("[ConfigClient] {} configs deleted", deleted_keys.len());
+                eprintln!("[ConfigClient] {} configs deleted: {}", deleted_keys.len(), deleted_keys.join(", "));
             }
         }
 

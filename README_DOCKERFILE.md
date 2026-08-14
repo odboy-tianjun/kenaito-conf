@@ -181,7 +181,7 @@ docker run -it --rm \
 docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-cpp-demo
 ```
 
-## Rust 客户端（待测试）
+## Rust 客户端
 
 ```bash
 docker build -f Dockerfile.rust -t kenaito-conf-rust-demo .

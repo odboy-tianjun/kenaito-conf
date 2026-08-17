@@ -192,9 +192,25 @@ docker run -it --rm \
   -e KENAITO_APP_NAME=kenaito-springboot-demo \
   -e KENAITO_ENV=daily \
   kenaito-conf-rust-demo
-  
+
 # windows
 docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-rust-demo
+```
+
+## Ruby 客户端
+
+```bash
+docker build -f Dockerfile.ruby -t kenaito-conf-ruby-demo .
+
+# linux or mac
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-ruby-demo
+
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-ruby-demo
 ```
 
 ## 环境变量说明

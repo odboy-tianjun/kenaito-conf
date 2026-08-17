@@ -8,7 +8,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C / C++ / Rust / Ruby
+- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby
 
 ## 项目结构
 
@@ -35,7 +35,9 @@ kenaito-conf/
 ├── kenaito-conf-cpp-client/             # C++ 客户端 SDK（C++11+）
 ├── kenaito-conf-cpp-client-demo/        # C++ 客户端示例
 ├── kenaito-conf-rust-client/            # Rust 客户端 SDK（Rust 2021+）
-└── kenaito-conf-rust-client-demo/       # Rust 客户端示例
+├── kenaito-conf-rust-client-demo/       # Rust 客户端示例
+├── kenaito-conf-ruby-client/            # Ruby 客户端 SDK（Ruby 2.5+）
+└── kenaito-conf-ruby-client-demo/       # Ruby 客户端示例
 ```
 
 ## 快速开始
@@ -421,6 +423,59 @@ $client->syncOnce();
 
 // 停止
 $client->stop();
+```
+
+### Ruby 客户端
+
+适用于 Ruby 2.5+ 项目。
+
+**1. 安装**
+
+```bash
+cd kenaito-conf-ruby-client
+gem build kenaito-conf.gemspec
+gem install kenaito-conf-1.0.3.gem
+```
+
+或在项目 `Gemfile` 中引入：
+
+```ruby
+gem 'kenaito-conf', path: '/path/to/kenaito-conf-ruby-client'
+```
+
+**2. 使用**
+
+```ruby
+require 'kenaito_conf'
+
+config = Kenaito::Conf::Config.new(
+  base_url: 'http://localhost:8080',
+  app_name: 'my-app',
+  env: 'daily',
+  sync_interval: 10,
+)
+
+client = Kenaito::Conf::Client.new(config)
+
+# 监听配置变更
+client.on_change do |changed|
+  changed.each do |key, value|
+    puts "config changed: #{key} = #{value}"
+  end
+end
+
+# 启动客户端（拉取配置）
+client.start
+
+# 获取配置
+value = client.get('database.host')
+all_configs = client.get_all
+
+# 手动同步一次
+client.sync_once
+
+# 停止
+client.stop_client
 ```
 
 ## API 概览

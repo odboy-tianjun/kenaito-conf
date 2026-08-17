@@ -6,7 +6,7 @@ A centralized configuration management platform rebuilt with Go, supporting mult
 
 - **Backend**: Go + Gin + xorm + MySQL
 - **Frontend**: Vue 2 + Vite 5 + Element UI 2
-- **Clients**: Go / Java (Spring Boot 2.x) / Python / Node.js / Perl / Lua / PHP / .NET / C / C++ / Rust / Ruby
+- **Clients**: Go / Java (Spring Boot 2.x) / Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby
 
 ## Project Structure
 
@@ -33,7 +33,9 @@ kenaito-conf/
 ├── kenaito-conf-cpp-client/             # C++ client SDK (C++11+)
 ├── kenaito-conf-cpp-client-demo/        # C++ client demo
 ├── kenaito-conf-rust-client/            # Rust client SDK (Rust 2021+)
-└── kenaito-conf-rust-client-demo/       # Rust client demo
+├── kenaito-conf-rust-client-demo/       # Rust client demo
+├── kenaito-conf-ruby-client/            # Ruby client SDK (Ruby 2.5+)
+└── kenaito-conf-ruby-client-demo/       # Ruby client demo
 ```
 
 ## Quick Start
@@ -415,6 +417,59 @@ $client->syncOnce();
 
 // Stop
 $client->stop();
+```
+
+### Ruby Client
+
+For Ruby 2.5+ projects.
+
+**1. Install**
+
+```bash
+cd kenaito-conf-ruby-client
+gem build kenaito-conf.gemspec
+gem install kenaito-conf-1.0.3.gem
+```
+
+Or add to your project `Gemfile`:
+
+```ruby
+gem 'kenaito-conf', path: '/path/to/kenaito-conf-ruby-client'
+```
+
+**2. Usage**
+
+```ruby
+require 'kenaito_conf'
+
+config = Kenaito::Conf::Config.new(
+  base_url: 'http://localhost:8080',
+  app_name: 'my-app',
+  env: 'daily',
+  sync_interval: 10,
+)
+
+client = Kenaito::Conf::Client.new(config)
+
+# Listen for config changes
+client.on_change do |changed|
+  changed.each do |key, value|
+    puts "config changed: #{key} = #{value}"
+  end
+end
+
+# Start client (fetch configs)
+client.start
+
+# Get config
+value = client.get('database.host')
+all_configs = client.get_all
+
+# Manual sync once
+client.sync_once
+
+# Stop
+client.stop_client
 ```
 
 ## API Overview

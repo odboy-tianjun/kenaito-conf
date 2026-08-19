@@ -8,7 +8,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby
+- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby / Bash / Dart
 
 ## 项目结构
 
@@ -37,7 +37,11 @@ kenaito-conf/
 ├── kenaito-conf-rust-client/            # Rust 客户端 SDK（Rust 2021+）
 ├── kenaito-conf-rust-client-demo/       # Rust 客户端示例
 ├── kenaito-conf-ruby-client/            # Ruby 客户端 SDK（Ruby 2.5+）
-└── kenaito-conf-ruby-client-demo/       # Ruby 客户端示例
+├── kenaito-conf-ruby-client-demo/       # Ruby 客户端示例
+├── kenaito-conf-bash-client/            # Bash 客户端 SDK（Bash 4.0+）
+├── kenaito-conf-bash-client-demo/       # Bash 客户端示例
+├── kenaito-conf-dart-client/            # Dart 客户端 SDK（Dart 2.12+）
+└── kenaito-conf-dart-client-demo/       # Dart 客户端示例
 ```
 
 ## 快速开始
@@ -476,6 +480,101 @@ client.sync_once
 
 # 停止
 client.stop_client
+```
+
+### Bash 客户端
+
+适用于 Bash 4.0+ 脚本、CI/CD 流水线、容器启动脚本等场景。依赖 `curl` 和 `jq`。
+
+**1. 引入**
+
+```bash
+source /path/to/kenaito-conf-bash-client/lib/kenaito_conf.sh
+```
+
+**2. 使用**
+
+```bash
+#!/usr/bin/env bash
+source /path/to/kenaito-conf-bash-client/lib/kenaito_conf.sh
+
+export KENAITO_BASE_URL="http://localhost:8080"
+export KENAITO_APP_NAME="my-app"
+export KENAITO_ENV="daily"
+export KENAITO_SYNC_INTERVAL=10
+
+# 变更回调函数（可选）
+kenaito_on_change() {
+    local changed_keys="$1"
+    echo "Config changed: $changed_keys"
+}
+
+# 启动客户端
+kenaito_start
+
+# 获取配置
+value=$(kenaito_get "database.host")
+
+# 获取所有配置
+kenaito_get_all
+
+# 同步循环
+while true; do
+    kenaito_sync_once
+    sleep "$KENAITO_SYNC_INTERVAL"
+done
+```
+
+### Dart 客户端
+
+适用于 Dart 2.12+ 项目（支持空安全）。
+
+**1. 安装**
+
+在项目 `pubspec.yaml` 中添加：
+
+```yaml
+dependencies:
+  kenaito_conf:
+    path: /path/to/kenaito-conf-dart-client
+```
+
+**2. 使用**
+
+```dart
+import 'package:kenaito_conf/kenaito_conf.dart';
+
+void main() async {
+  final config = Config(
+    baseUrl: 'http://localhost:8080',
+    appName: 'my-app',
+    env: 'daily',
+    syncInterval: 10,
+  );
+
+  final client = Client(config);
+
+  // 监听配置变更
+  client.onChange((Map<String, String> changed) {
+    changed.forEach((key, value) {
+      print('config changed: $key = $value');
+    });
+  });
+
+  // 启动客户端（拉取配置）
+  client.start();
+  await Future.delayed(Duration(seconds: 2));
+
+  // 获取配置
+  final value = client.get('database.host');
+  final allConfigs = client.getAll();
+
+  // 同步循环
+  while (true) {
+    client.syncOnce();
+    await Future.delayed(Duration(seconds: config.syncInterval));
+  }
+}
 ```
 
 ## API 概览

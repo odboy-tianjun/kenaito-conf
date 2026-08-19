@@ -213,6 +213,38 @@ docker run -it --rm \
 docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-ruby-demo
 ```
 
+## Bash 客户端
+
+```bash
+docker build -f Dockerfile.bash -t kenaito-conf-bash-demo .
+
+# linux or mac
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-bash-demo
+
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-bash-demo
+```
+
+## Dart 客户端
+
+```bash
+docker build -f Dockerfile.dart -t kenaito-conf-dart-demo .
+
+# linux or mac
+docker run -it --rm \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-dart-demo
+
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-dart-demo
+```
+
 ## 环境变量说明
 
 | 变量名                     | 说明       | 默认值                       |

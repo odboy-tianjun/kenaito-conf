@@ -6,7 +6,7 @@ A centralized configuration management platform rebuilt with Go, supporting mult
 
 - **Backend**: Go + Gin + xorm + MySQL
 - **Frontend**: Vue 2 + Vite 5 + Element UI 2
-- **Clients**: Go / Java (Spring Boot 2.x) / Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby
+- **Clients**: Go / Java (Spring Boot 2.x) / Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby / Bash / Dart
 
 ## Project Structure
 
@@ -35,7 +35,11 @@ kenaito-conf/
 ├── kenaito-conf-rust-client/            # Rust client SDK (Rust 2021+)
 ├── kenaito-conf-rust-client-demo/       # Rust client demo
 ├── kenaito-conf-ruby-client/            # Ruby client SDK (Ruby 2.5+)
-└── kenaito-conf-ruby-client-demo/       # Ruby client demo
+├── kenaito-conf-ruby-client-demo/       # Ruby client demo
+├── kenaito-conf-bash-client/            # Bash client SDK (Bash 4.0+)
+├── kenaito-conf-bash-client-demo/       # Bash client demo
+├── kenaito-conf-dart-client/            # Dart client SDK (Dart 2.12+)
+└── kenaito-conf-dart-client-demo/       # Dart client demo
 ```
 
 ## Quick Start
@@ -470,6 +474,101 @@ client.sync_once
 
 # Stop
 client.stop_client
+```
+
+### Bash Client
+
+For Bash 4.0+ scripts, CI/CD pipelines, container startup scripts, etc. Requires `curl` and `jq`.
+
+**1. Source**
+
+```bash
+source /path/to/kenaito-conf-bash-client/lib/kenaito_conf.sh
+```
+
+**2. Usage**
+
+```bash
+#!/usr/bin/env bash
+source /path/to/kenaito-conf-bash-client/lib/kenaito_conf.sh
+
+export KENAITO_BASE_URL="http://localhost:8080"
+export KENAITO_APP_NAME="my-app"
+export KENAITO_ENV="daily"
+export KENAITO_SYNC_INTERVAL=10
+
+# Change callback function (optional)
+kenaito_on_change() {
+    local changed_keys="$1"
+    echo "Config changed: $changed_keys"
+}
+
+# Start client
+kenaito_start
+
+# Get config
+value=$(kenaito_get "database.host")
+
+# Get all configs
+kenaito_get_all
+
+# Sync loop
+while true; do
+    kenaito_sync_once
+    sleep "$KENAITO_SYNC_INTERVAL"
+done
+```
+
+### Dart Client
+
+For Dart 2.12+ projects (null-safe).
+
+**1. Install**
+
+Add to your project `pubspec.yaml`:
+
+```yaml
+dependencies:
+  kenaito_conf:
+    path: /path/to/kenaito-conf-dart-client
+```
+
+**2. Usage**
+
+```dart
+import 'package:kenaito_conf/kenaito_conf.dart';
+
+void main() async {
+  final config = Config(
+    baseUrl: 'http://localhost:8080',
+    appName: 'my-app',
+    env: 'daily',
+    syncInterval: 10,
+  );
+
+  final client = Client(config);
+
+  // Listen for config changes
+  client.onChange((Map<String, String> changed) {
+    changed.forEach((key, value) {
+      print('config changed: $key = $value');
+    });
+  });
+
+  // Start client (fetch configs)
+  client.start();
+  await Future.delayed(Duration(seconds: 2));
+
+  // Get config
+  final value = client.get('database.host');
+  final allConfigs = client.getAll();
+
+  // Sync loop
+  while (true) {
+    client.syncOnce();
+    await Future.delayed(Duration(seconds: config.syncInterval));
+  }
+}
 ```
 
 ## API Overview

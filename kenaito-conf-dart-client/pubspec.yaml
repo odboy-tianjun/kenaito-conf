@@ -1,0 +1,7 @@
+name: kenaito_conf
+description: Kenaito Config Center Dart Client
+version: 1.0.3
+homepage: https://github.com/odboy/kenaito-conf
+
+environment:
+  sdk: '>=2.12.0 <4.0.0'

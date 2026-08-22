@@ -165,6 +165,37 @@ curl http://localhost:8081/health
 docker stop springboot2-demo
 ```
 
+## Spring Boot 3 客户端
+
+Spring Boot 3 客户端要求 JDK 17+，Demo 默认监听 `8084`。构建阶段使用 Maven 3 + JDK 21 镜像编译，运行阶段使用 `eclipse-temurin:17-jre`。
+
+```bash
+docker build -f Dockerfile.springboot3 -t kenaito-conf-springboot3-demo .
+
+# linux or mac
+docker run -d --rm --name springboot3-demo \
+  -p 8084:8084 \
+  -e KENAITO_BASE_URL=http://host.docker.internal:8080 \
+  -e KENAITO_APP_NAME=kenaito-springboot-demo \
+  -e KENAITO_ENV=daily \
+  kenaito-conf-springboot3-demo
+
+# windows
+docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENAITO_APP_NAME=kenaito-springboot-demo -e KENAITO_ENV=daily kenaito-conf-springboot3-demo
+
+# 查看日志
+docker logs -f springboot3-demo
+
+# 测试接口
+curl http://localhost:8084/config
+curl http://localhost:8084/configprops
+curl http://localhost:8084/changes
+curl http://localhost:8084/health
+
+# 停止
+docker stop springboot3-demo
+```
+
 ## C++ 客户端
 
 ```bash
@@ -269,7 +300,7 @@ docker run -it --rm -e KENAITO_BASE_URL=http://host.docker.internal:8080 -e KENA
    docker run --network kenaito-net -e KENAITO_BASE_URL=http://kenaito-server:8080 ...
    ```
 
-3. **配置缓存**：各客户端会在运行目录生成 `config-cache.json` 文件，容器重启后可从缓存加载配置
+3. **配置缓存**：各客户端会在运行目录生成 `config-cache.*` 缓存文件（Spring Boot 客户端为 `config-cache.log`），容器重启后可从缓存加载配置
 
 4. **日志查看**：
     - Go/.NET：直接输出到 stdout

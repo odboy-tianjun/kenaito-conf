@@ -1,0 +1,25 @@
+# Build stage (Maven 3 + JDK 21, compiles the Java 17 client and demo)
+FROM registry.cn-shanghai.aliyuncs.com/odboy/kenaito-cicd:runtime-maven3-jdk21 AS build
+
+WORKDIR /src
+
+# Copy client library and install it to the local Maven repository
+COPY kenaito-conf-springboot3-client/ ./kenaito-conf-springboot3-client/
+WORKDIR /src/kenaito-conf-springboot3-client
+RUN mvn clean install -DskipTests
+
+# Copy demo project and build
+WORKDIR /src
+COPY kenaito-conf-springboot3-client-demo/ ./kenaito-conf-springboot3-client-demo/
+WORKDIR /src/kenaito-conf-springboot3-client-demo
+RUN mvn clean package -DskipTests
+
+# Runtime stage (Spring Boot 3 requires Java 17+)
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+COPY --from=build /src/kenaito-conf-springboot3-client-demo/target/*.jar app.jar
+
+EXPOSE 8084
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

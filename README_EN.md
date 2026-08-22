@@ -6,7 +6,7 @@ A centralized configuration management platform rebuilt with Go, supporting mult
 
 - **Backend**: Go + Gin + xorm + MySQL
 - **Frontend**: Vue 2 + Vite 5 + Element UI 2
-- **Clients**: Go / Java (Spring Boot 2.x) / Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby / Bash / Dart
+- **Clients**: Go / Java (Spring Boot 2.x / 3.x) / Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby / Bash / Dart
 
 ## Project Structure
 
@@ -18,6 +18,8 @@ kenaito-conf/
 ├── kenaito-conf-go-client-demo/         # Go client demo
 ├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x client SDK (JDK 8+)
 ├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x client demo (port 8081)
+├── kenaito-conf-springboot3-client/     # Java Spring Boot 3.x client SDK (JDK 17+)
+├── kenaito-conf-springboot3-client-demo/# Spring Boot 3.x client demo (port 8084)
 ├── kenaito-conf-python-client/          # Python client SDK (Python 3.10+)
 ├── kenaito-conf-python-client-demo/     # Python client demo (port 8082)
 ├── kenaito-conf-nodejs-client/          # Node.js client SDK (Node.js 18+)
@@ -145,17 +147,17 @@ Suitable for JDK 8+ and Spring Boot 2.x projects, supports automatic config refr
 
 ```properties
 # Config center settings
-kenaito.configcenter.base-url=http://localhost:8080
+kenaito.config.baseUrl=http://localhost:8080
 # Application name (required)
-kenaito.configcenter.app-name=myapp
+kenaito.config.appName=myapp
 # Environment (dev/daily/prod)
-kenaito.configcenter.env=daily
+kenaito.config.profile=daily
 # Config version
-kenaito.configcenter.version=latest
+kenaito.config.version=latest
 # Auth token (optional)
-kenaito.configcenter.token=app-token
+kenaito.config.token=app-token
 # Sync interval (seconds)
-kenaito.configcenter.sync-interval=30
+kenaito.config.sync-interval-seconds=30
 ```
 
 **3. Use Configuration**
@@ -169,6 +171,49 @@ private Integer databasePort;
 ```
 
 `@Value` fields are automatically refreshed when configuration changes, no application restart required. See [Spring Boot 2 Client Documentation](kenaito-conf-springboot2-client/README.md) for details.
+
+### Java Spring Boot 3.x Client
+
+Suitable for JDK 17+ and Spring Boot 3.x projects, supports automatic config refresh, dynamic `@Value` / `@ConfigurationProperties` updates, and local cache fallback.
+
+**1. Add Dependency**
+
+```xml
+<dependency>
+    <groupId>cn.odboy</groupId>
+    <artifactId>kenaito-conf-springboot3-client</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+**2. Add Configuration** (`application.properties`)
+
+```properties
+# Config center settings (multiple addresses separated by commas)
+kenaito.config.base-url=http://localhost:8080
+# Application name (required)
+kenaito.config.app-name=myapp
+# Environment (dev/daily/prod)
+kenaito.config.profile=daily
+# Config version
+kenaito.config.version=latest
+# Auth token (optional)
+kenaito.config.token=app-token
+# Sync interval (seconds)
+kenaito.config.sync-interval-seconds=30
+```
+
+**3. Use Configuration**
+
+```java
+@Value("${database.host:localhost}")
+private String databaseHost;
+
+@Value("${database.port:3306}")
+private Integer databasePort;
+```
+
+`@Value` fields and `@ConfigurationProperties` beans are automatically refreshed when configuration changes, no application restart required. See [Spring Boot 3 Client Documentation](kenaito-conf-springboot3-client/README_EN.md) for details.
 
 ### Python Client
 

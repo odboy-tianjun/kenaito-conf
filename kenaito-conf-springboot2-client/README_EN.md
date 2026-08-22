@@ -36,28 +36,28 @@ Add config center connection parameters in `application.properties`:
 
 ```properties
 # Config center URL
-kenaito.configcenter.base-url=http://localhost:8080
+kenaito.config.baseUrl=http://localhost:8080
 
 # Application name (required)
-kenaito.configcenter.app-name=my-app
+kenaito.config.appName=my-app
 
 # Environment (dev/daily/prod)
-kenaito.configcenter.env=daily
+kenaito.config.profile=daily
 
 # Config version
-kenaito.configcenter.version=latest
+kenaito.config.version=latest
 
 # Auth token (optional)
-kenaito.configcenter.token=your-token
+kenaito.config.token=your-token
 
 # Whether to enable remote config (default true)
-kenaito.configcenter.enabled=true
+kenaito.config.enabled=true
 
-# Sync interval in seconds (default 10)
-kenaito.configcenter.sync-interval=10
+# Sync interval in seconds (default 60)
+kenaito.config.sync-interval-seconds=10
 
-# Sensitive config keys (for log masking, optional)
-kenaito.configcenter.sensitive-keys=password,secret,key,token
+# Ignore business group global configs (default false)
+kenaito.config.global-ignore=false
 ```
 
 ### 2. Inject Configs with @Value
@@ -122,14 +122,17 @@ public class DatabaseProperties {
 
 | Property | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `kenaito.configcenter.base-url` | Config center URL | - | Yes |
-| `kenaito.configcenter.app-name` | Application name | - | Yes |
-| `kenaito.configcenter.env` | Environment | `dev` | No |
-| `kenaito.configcenter.version` | Config version | `latest` | No |
-| `kenaito.configcenter.token` | Auth token | Empty | No |
-| `kenaito.configcenter.enabled` | Whether to enable | `true` | No |
-| `kenaito.configcenter.sync-interval` | Sync interval (seconds) | `10` | No |
-| `kenaito.configcenter.sensitive-keys` | Sensitive keys (log masking) | Empty | No |
+| `kenaito.config.baseUrl` | Config center URL | - | Yes |
+| `kenaito.config.appName` | Application name | `spring.application.name` | Yes |
+| `kenaito.config.profile` | Environment | `dev` | No |
+| `kenaito.config.version` | Config version | `latest` | No |
+| `kenaito.config.token` | Auth token | Empty | No |
+| `kenaito.config.enabled` | Whether to enable | `true` | No |
+| `kenaito.config.sync-interval-seconds` | Sync interval (seconds) | `60` | No |
+| `kenaito.config.global-ignore` | Ignore business group global configs | `false` | No |
+| `kenaito.configcenter.local-storage-dir` | Local cache directory | Application working directory | No |
+
+> The Spring Boot 2 client reads the camel-case `baseUrl` / `appName` keys. Sensitive keys are fixed to `password`, `passwd`, `key`, `secret`, `token`, `credentials` and cannot be customized.
 
 ## Auto Configuration
 
@@ -150,12 +153,12 @@ mvn spring-boot:run
 ```
 
 Demo defaults:
-- Port: 8083
-- App name: `kenaito-springboot2-demo`
+- Port: 8081
+- App name: `kenaito-springboot-demo`
 - Environment: `daily`
 - Config center URL: `http://localhost:8080`
 
-Visit `http://localhost:8083/config` to view current configs.
+Visit `http://localhost:8081/` or `http://localhost:8081/configprops` to view current configs.
 
 ## Notes
 

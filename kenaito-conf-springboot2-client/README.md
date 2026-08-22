@@ -38,28 +38,28 @@ mvn clean install
 
 ```properties
 # 配置中心地址
-kenaito.configcenter.base-url=http://localhost:8080
+kenaito.config.baseUrl=http://localhost:8080
 
 # 应用名称（必填）
-kenaito.configcenter.app-name=my-app
+kenaito.config.appName=my-app
 
 # 环境（dev/daily/prod）
-kenaito.configcenter.env=daily
+kenaito.config.profile=daily
 
 # 配置版本
-kenaito.configcenter.version=latest
+kenaito.config.version=latest
 
 # 认证令牌（可选）
-kenaito.configcenter.token=your-token
+kenaito.config.token=your-token
 
 # 是否启用远程配置（默认 true）
-kenaito.configcenter.enabled=true
+kenaito.config.enabled=true
 
-# 同步间隔（秒，默认 10）
-kenaito.configcenter.sync-interval=10
+# 同步间隔（秒，默认 60）
+kenaito.config.sync-interval-seconds=10
 
-# 敏感配置键（用于日志脱敏，可选）
-kenaito.configcenter.sensitive-keys=password,secret,key,token
+# 是否忽略业务组全局配置（默认 false）
+kenaito.config.global-ignore=false
 ```
 
 ### 2. 使用 @Value 注入配置
@@ -124,14 +124,17 @@ public class DatabaseProperties {
 
 | 配置项 | 说明 | 默认值 | 必填 |
 |--------|------|--------|------|
-| `kenaito.configcenter.base-url` | 配置中心地址 | - | 是 |
-| `kenaito.configcenter.app-name` | 应用名称 | - | 是 |
-| `kenaito.configcenter.env` | 环境标识 | `dev` | 否 |
-| `kenaito.configcenter.version` | 配置版本 | `latest` | 否 |
-| `kenaito.configcenter.token` | 认证令牌 | 空 | 否 |
-| `kenaito.configcenter.enabled` | 是否启用 | `true` | 否 |
-| `kenaito.configcenter.sync-interval` | 同步间隔（秒） | `10` | 否 |
-| `kenaito.configcenter.sensitive-keys` | 敏感键（日志脱敏） | 空 | 否 |
+| `kenaito.config.baseUrl` | 配置中心地址 | - | 是 |
+| `kenaito.config.appName` | 应用名称 | `spring.application.name` | 是 |
+| `kenaito.config.profile` | 环境标识 | `dev` | 否 |
+| `kenaito.config.version` | 配置版本 | `latest` | 否 |
+| `kenaito.config.token` | 认证令牌 | 空 | 否 |
+| `kenaito.config.enabled` | 是否启用 | `true` | 否 |
+| `kenaito.config.sync-interval-seconds` | 同步间隔（秒） | `60` | 否 |
+| `kenaito.config.global-ignore` | 忽略业务组全局配置 | `false` | 否 |
+| `kenaito.configcenter.local-storage-dir` | 本地缓存目录 | 应用工作目录 | 否 |
+
+> Spring Boot 2 客户端读取的是驼峰形式的 `baseUrl` / `appName`；敏感键固定为 `password`、`passwd`、`key`、`secret`、`token`、`credentials`，暂不支持自定义。
 
 ## 自动配置说明
 
@@ -152,12 +155,12 @@ mvn spring-boot:run
 ```
 
 Demo 默认配置：
-- 端口：8083
-- 应用名称：`kenaito-springboot2-demo`
+- 端口：8081
+- 应用名称：`kenaito-springboot-demo`
 - 环境：`daily`
 - 配置中心地址：`http://localhost:8080`
 
-访问 `http://localhost:8083/config` 查看当前配置。
+访问 `http://localhost:8081/` 或 `http://localhost:8081/configprops` 查看当前配置。
 
 ## 注意事项
 

@@ -8,7 +8,7 @@
 
 - **后端**: Go + Gin + xorm + MySQL
 - **前端**: Vue 2 + Vite 5 + Element UI 2
-- **客户端**: Go / Java（Spring Boot 2.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby / Bash / Dart
+- **客户端**: Go / Java（Spring Boot 2.x / 3.x）/ Python / Node.js / Perl / Lua / PHP / .NET / C++ / Rust / Ruby / Bash / Dart
 
 ## 项目结构
 
@@ -20,6 +20,8 @@ kenaito-conf/
 ├── kenaito-conf-go-client-demo/         # Go 客户端示例
 ├── kenaito-conf-springboot2-client/     # Java Spring Boot 2.x 客户端 SDK（JDK 8+）
 ├── kenaito-conf-springboot2-client-demo/# Spring Boot 2.x 客户端示例（端口 8081）
+├── kenaito-conf-springboot3-client/     # Java Spring Boot 3.x 客户端 SDK（JDK 17+）
+├── kenaito-conf-springboot3-client-demo/# Spring Boot 3.x 客户端示例（端口 8084）
 ├── kenaito-conf-python-client/          # Python 客户端 SDK（Python 3.10+）
 ├── kenaito-conf-python-client-demo/     # Python 客户端示例（端口 8082）
 ├── kenaito-conf-nodejs-client/          # Node.js 客户端 SDK（Node.js 18+）
@@ -148,17 +150,17 @@ dbHost := c.Get("db.host")
 
 ```properties
 # 配置中心地址
-kenaito.configcenter.base-url=http://localhost:8080
+kenaito.config.baseUrl=http://localhost:8080
 # 应用名称（必填）
-kenaito.configcenter.app-name=myapp
+kenaito.config.appName=myapp
 # 环境（dev/daily/prod）
-kenaito.configcenter.env=daily
+kenaito.config.profile=daily
 # 配置版本
-kenaito.configcenter.version=latest
+kenaito.config.version=latest
 # 认证令牌（可选）
-kenaito.configcenter.token=app-token
+kenaito.config.token=app-token
 # 同步间隔（秒）
-kenaito.configcenter.sync-interval=30
+kenaito.config.sync-interval-seconds=30
 ```
 
 **3. 使用配置**
@@ -173,6 +175,49 @@ private Integer databasePort;
 
 配置变更时会自动刷新 `@Value`
 字段，无需重启应用。详见 [Spring Boot 2 客户端文档](kenaito-conf-springboot2-client/README.md)。
+
+### Java Spring Boot 3.x 客户端
+
+适用于 JDK 17+、Spring Boot 3.x 项目，支持配置自动刷新、`@Value` / `@ConfigurationProperties` 动态更新和本地缓存容灾。
+
+**1. 引入依赖**
+
+```xml
+<dependency>
+    <groupId>cn.odboy</groupId>
+    <artifactId>kenaito-conf-springboot3-client</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+**2. 添加配置**（`application.properties`）
+
+```properties
+# 配置中心地址（多个地址用逗号分隔）
+kenaito.config.base-url=http://localhost:8080
+# 应用名称（必填）
+kenaito.config.app-name=myapp
+# 环境（dev/daily/prod）
+kenaito.config.profile=daily
+# 配置版本
+kenaito.config.version=latest
+# 认证令牌（可选）
+kenaito.config.token=app-token
+# 同步间隔（秒）
+kenaito.config.sync-interval-seconds=30
+```
+
+**3. 使用配置**
+
+```java
+@Value("${database.host:localhost}")
+private String databaseHost;
+
+@Value("${database.port:3306}")
+private Integer databasePort;
+```
+
+配置变更时会自动刷新 `@Value` 字段和 `@ConfigurationProperties` Bean，无需重启应用。详见 [Spring Boot 3 客户端文档](kenaito-conf-springboot3-client/README.md)。
 
 ### Python 客户端
 

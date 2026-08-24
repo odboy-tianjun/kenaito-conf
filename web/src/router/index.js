@@ -13,7 +13,7 @@ const routes = [
   {
     path: '/',
     component: () => import('../views/Layout.vue'),
-    redirect: '/app/list',
+    redirect: '/profile/list',
     children: [
       {
         path: '/app/config/list',

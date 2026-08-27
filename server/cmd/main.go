@@ -44,12 +44,14 @@ func main() {
 	groupHandler := handler.NewGroupHandler()
 	profileHandler := handler.NewProfileHandler()
 	clientHandler := handler.NewClientHandler()
+	healthHandler := handler.NewHealthHandler()
 
 	// init gin
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
 	// public routes
+	r.GET("/health", healthHandler.Check)
 	r.POST("/user/login", authHandler.Login)
 
 	// admin routes (JWT auth required)

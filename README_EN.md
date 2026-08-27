@@ -46,7 +46,38 @@ kenaito-conf/
 
 ## Quick Start
 
-### 1. Start Backend
+### Option 1: Docker Compose (recommended)
+
+Prerequisites: Docker Desktop or Docker Engine with Compose v2.
+
+```bash
+# Optional: adjust ports, database passwords and JWT secret
+cp .env.example .env
+
+docker compose up -d --build
+```
+
+After startup:
+
+- Web UI: http://localhost:3000
+- Backend API: http://localhost:8080
+- Health check: http://localhost:8080/health
+- Default admin: `admin` / `admin123`
+
+Useful commands:
+
+```bash
+docker compose ps            # show services and health status
+docker compose logs -f server
+docker compose down          # stop services, keep MySQL data
+docker compose down -v       # stop services and remove the MySQL volume
+```
+
+On first startup the backend creates the tables and seeds the admin account automatically. MySQL is only exposed on the Compose network and does not occupy port 3306 on the host.
+
+### Option 2: Local development
+
+#### 1. Start Backend
 
 ```bash
 cd server
@@ -79,7 +110,7 @@ go build -o bin/server cmd/main.go
 
 The backend listens on `:8080` by default.
 
-### 2. Start Frontend
+#### 2. Start Frontend
 
 ```bash
 cd web
@@ -89,7 +120,7 @@ npm run dev
 
 The frontend listens on `:3000` by default and automatically proxies API requests to the backend.
 
-### 3. Access
+#### 3. Access
 
 Open http://localhost:3000
 

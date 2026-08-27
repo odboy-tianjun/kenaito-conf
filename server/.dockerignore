@@ -1,0 +1,6 @@
+bin/
+*.log
+application-dev.properties
+application-*.properties
+!application-docker.properties
+.DS_Store

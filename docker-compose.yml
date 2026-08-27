@@ -1,0 +1,66 @@
+services:
+  mysql:
+    image: mysql:8.0
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-kenaito_conf}
+      MYSQL_USER: ${MYSQL_USER:-kenaito}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kenaito123}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+    environment:
+      KENAITO_ACTIVE: docker
+      KENAITO_DB_HOST: mysql
+      KENAITO_DB_PORT: "3306"
+      KENAITO_DB_NAME: ${MYSQL_DATABASE:-kenaito_conf}
+      KENAITO_DB_USER: ${MYSQL_USER:-kenaito}
+      KENAITO_DB_PASSWORD: ${MYSQL_PASSWORD:-kenaito123}
+      KENAITO_JWT_SECRET: ${JWT_SECRET:-kenaito-conf-docker-secret-change-me}
+      KENAITO_JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+      TZ: ${TZ:-Asia/Shanghai}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  mysql-data:

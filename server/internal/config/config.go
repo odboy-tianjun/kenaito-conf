@@ -42,7 +42,10 @@ func Load(path string) error {
 		return err
 	}
 
-	active := baseProps["active"]
+	active := os.Getenv("KENAITO_ACTIVE")
+	if active == "" {
+		active = baseProps["active"]
+	}
 	if active == "" {
 		return fmt.Errorf("missing required config: active")
 	}
@@ -60,17 +63,18 @@ func Load(path string) error {
 
 	Cfg = &Config{}
 
-	Cfg.Server.Port = intProp(baseProps, "server.port", 8080)
+	Cfg.Server.Port = envInt("KENAITO_SERVER_PORT", intProp(baseProps, "server.port", 8080))
 	setServerMode(active)
 
-	Cfg.Database.Host = baseProps["database.host"]
-	Cfg.Database.Port = intProp(baseProps, "database.port", 3306)
-	Cfg.Database.Name = baseProps["database.name"]
-	Cfg.Database.User = baseProps["database.user"]
-	Cfg.Database.Password = baseProps["database.password"]
+	// 环境变量优先，便于容器化部署时覆盖配置文件
+	Cfg.Database.Host = envStr("KENAITO_DB_HOST", baseProps["database.host"])
+	Cfg.Database.Port = envInt("KENAITO_DB_PORT", intProp(baseProps, "database.port", 3306))
+	Cfg.Database.Name = envStr("KENAITO_DB_NAME", baseProps["database.name"])
+	Cfg.Database.User = envStr("KENAITO_DB_USER", baseProps["database.user"])
+	Cfg.Database.Password = envStr("KENAITO_DB_PASSWORD", baseProps["database.password"])
 
-	Cfg.JWT.Secret = baseProps["jwt.secret"]
-	Cfg.JWT.ExpireHours = intProp(baseProps, "jwt.expireHours", 24)
+	Cfg.JWT.Secret = envStr("KENAITO_JWT_SECRET", baseProps["jwt.secret"])
+	Cfg.JWT.ExpireHours = envInt("KENAITO_JWT_EXPIRE_HOURS", intProp(baseProps, "jwt.expireHours", 24))
 
 	if Cfg.Database.Host == "" {
 		return fmt.Errorf("missing required config: database.host")
@@ -82,7 +86,7 @@ func Load(path string) error {
 func setServerMode(active string) {
 	if "daily" == active {
 		Cfg.Server.Mode = gin.DebugMode
-	} else if "stage" == active || "online" == active {
+	} else if "stage" == active || "online" == active || "docker" == active {
 		Cfg.Server.Mode = gin.ReleaseMode
 	} else {
 		Cfg.Server.Mode = gin.DebugMode
@@ -125,6 +129,27 @@ func intProp(props map[string]string, key string, defaultVal int) int {
 	n, err := strconv.Atoi(v)
 	if err != nil {
 		return defaultVal
+	}
+	return n
+}
+
+// envStr 返回环境变量值，未设置时使用 fallback
+func envStr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
+// envInt 返回整数环境变量值，未设置或非法时使用 fallback
+func envInt(key string, fallback int) int {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return fallback
 	}
 	return n
 }

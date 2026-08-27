@@ -48,7 +48,38 @@ kenaito-conf/
 
 ## 快速开始
 
-### 1. 启动后端
+### 方式一：Docker Compose 一键启动（推荐）
+
+前置条件：Docker Desktop 或 Docker Engine + Compose v2。
+
+```bash
+# 可选：按需修改端口、数据库密码和 JWT 密钥
+cp .env.example .env
+
+docker compose up -d --build
+```
+
+启动完成后：
+
+- 管理界面：http://localhost:3000
+- 后端接口：http://localhost:8080
+- 健康检查：http://localhost:8080/health
+- 默认管理员：`admin` / `admin123`
+
+常用命令：
+
+```bash
+docker compose ps            # 查看服务与健康状态
+docker compose logs -f server
+docker compose down          # 停止服务，保留 MySQL 数据
+docker compose down -v       # 停止服务并删除 MySQL 数据卷
+```
+
+首次启动时后端会自动建表并初始化管理员账号。MySQL 仅在容器网络内暴露，不会占用宿主机 3306 端口。
+
+### 方式二：本地开发启动
+
+#### 1. 启动后端
 
 ```bash
 cd server
@@ -81,7 +112,7 @@ go build -o bin/server cmd/main.go
 
 后端默认监听 `:8080`。
 
-### 2. 启动前端
+#### 2. 启动前端
 
 ```bash
 cd web
@@ -91,7 +122,7 @@ npm run dev
 
 前端默认监听 `:3000`，自动代理 API 到后端。
 
-### 3. 访问
+#### 3. 访问
 
 打开 http://localhost:3000
 

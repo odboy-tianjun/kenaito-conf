@@ -4,15 +4,6 @@
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE TABLE `user_permission` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int DEFAULT NULL,
-  `env` varchar(16) DEFAULT NULL,
-  `app_id` int DEFAULT NULL,
-  `operate` varchar(8) DEFAULT 'RW',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-
 CREATE TABLE `profile_extr_attr` (
   `profile` varchar(32) NOT NULL,
   `attr_name` varchar(50) NOT NULL,

@@ -148,34 +148,6 @@ func (s *AuthService) loadPermissions(userInfo *model.LoginUserInfo, userId int)
 		userInfo.GrantAppIds = append(userInfo.GrantAppIds, app.Id)
 		userInfo.GrantPermissons = append(userInfo.GrantPermissons, buildPermissionCode(app.Id, "RW"))
 	}
-
-	// load granted permissions
-	var perms []model.UserPermission
-	dao.Engine.Where("user_id = ?", userId).Find(&perms)
-	for _, p := range perms {
-		permCode := buildPermissionCode(p.AppId, p.Operate)
-		// avoid duplicate
-		found := false
-		for _, existing := range userInfo.GrantPermissons {
-			if existing == permCode {
-				found = true
-				break
-			}
-		}
-		if !found {
-			userInfo.GrantPermissons = append(userInfo.GrantPermissons, permCode)
-		}
-		appIdFound := false
-		for _, id := range userInfo.GrantAppIds {
-			if id == p.AppId {
-				appIdFound = true
-				break
-			}
-		}
-		if !appIdFound {
-			userInfo.GrantAppIds = append(userInfo.GrantAppIds, p.AppId)
-		}
-	}
 }
 
 func buildPermissionCode(appId int, operate string) string {

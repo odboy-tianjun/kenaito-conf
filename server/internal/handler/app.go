@@ -45,10 +45,10 @@ func (h *AppHandler) List(c *gin.Context) {
 
 		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
 			// 组管理员：本组应用 + 自己是负责人的应用
-			query = query.And("(group_id = ? OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = ?))", *userInfo.GroupId, userId)
+			query = query.And("(group_id = ? OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0)", *userInfo.GroupId)
 		} else {
-			// 普通用户：自己是负责人的应用 + 被授权的应用
-			query = query.And("(FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = ?))", userId)
+			// 普通用户：自己是负责人的应用
+			query = query.And("FIND_IN_SET('" + userIdStr + "', owner_ids) > 0")
 		}
 	}
 
@@ -60,10 +60,10 @@ func (h *AppHandler) List(c *gin.Context) {
 		
 		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
 			// 组管理员：本组应用 + 自己是负责人的应用
-			whereClause += " AND (group_id = " + strconv.Itoa(*userInfo.GroupId) + " OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = " + strconv.Itoa(userId) + "))"
+			whereClause += " AND (group_id = " + strconv.Itoa(*userInfo.GroupId) + " OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0)"
 		} else {
-			// 普通用户：自己是负责人的应用 + 被授权的应用
-			whereClause += " AND (FIND_IN_SET('" + userIdStr + "', owner_ids) > 0 OR id IN (SELECT app_id FROM user_permission WHERE user_id = " + strconv.Itoa(userId) + "))"
+			// 普通用户：自己是负责人的应用
+			whereClause += " AND (FIND_IN_SET('" + userIdStr + "', owner_ids) > 0)"
 		}
 	}
 	if req.AppType != "" {

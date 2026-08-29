@@ -37,7 +37,6 @@ func Init() error {
 		new(model.AppConfig),
 		new(model.AppConfigHistory),
 		new(model.User),
-		new(model.UserPermission),
 		new(model.ClientInstance),
 	); err != nil {
 		return err

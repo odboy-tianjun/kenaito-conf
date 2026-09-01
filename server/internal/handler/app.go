@@ -37,7 +37,9 @@ func (h *AppHandler) List(c *gin.Context) {
 	}
 
 	userInfo := middleware.GetUserInfo(c)
-	query := dao.Engine.Where("enabled = 1")
+
+	conditions := []string{"enabled = 1"}
+	args := make([]interface{}, 0, 6)
 
 	if !userInfo.IsSuperAdmin() {
 		userId, _ := strconv.Atoi(userInfo.Id)
@@ -45,42 +47,41 @@ func (h *AppHandler) List(c *gin.Context) {
 
 		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
 			// 组管理员：本组应用 + 自己是负责人的应用
-			query = query.And("(group_id = ? OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0)", *userInfo.GroupId)
+			conditions = append(conditions, "(group_id = ? OR FIND_IN_SET(?, owner_ids) > 0)")
+			args = append(args, *userInfo.GroupId, userIdStr)
 		} else {
 			// 普通用户：自己是负责人的应用
-			query = query.And("FIND_IN_SET('" + userIdStr + "', owner_ids) > 0")
-		}
-	}
-
-	var apps []model.Application
-	whereClause := "enabled = 1"
-	if !userInfo.IsSuperAdmin() {
-		userId, _ := strconv.Atoi(userInfo.Id)
-		userIdStr := strconv.Itoa(userId)
-		
-		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
-			// 组管理员：本组应用 + 自己是负责人的应用
-			whereClause += " AND (group_id = " + strconv.Itoa(*userInfo.GroupId) + " OR FIND_IN_SET('" + userIdStr + "', owner_ids) > 0)"
-		} else {
-			// 普通用户：自己是负责人的应用
-			whereClause += " AND (FIND_IN_SET('" + userIdStr + "', owner_ids) > 0)"
+			conditions = append(conditions, "FIND_IN_SET(?, owner_ids) > 0")
+			args = append(args, userIdStr)
 		}
 	}
 	if req.AppType != "" {
-		whereClause += " AND service_id = '" + req.AppType + "'"
+		conditions = append(conditions, "service_id = ?")
+		args = append(args, req.AppType)
 	}
 	if req.Name != "" {
-		whereClause += " AND name LIKE '%" + req.Name + "%'"
+		conditions = append(conditions, "name LIKE ?")
+		args = append(args, "%"+req.Name+"%")
 	}
 	if req.Code != "" {
-		whereClause += " AND code LIKE '%" + req.Code + "%'"
+		conditions = append(conditions, "code LIKE ?")
+		args = append(args, "%"+req.Code+"%")
 	}
 	if req.GroupId != "" {
-		whereClause += " AND group_id = " + req.GroupId
+		groupId, err := strconv.Atoi(req.GroupId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, model.WrapperResponse{Code: 400, Msg: "参数错误"})
+			return
+		}
+		conditions = append(conditions, "group_id = ?")
+		args = append(args, groupId)
 	}
-	
-	total, _ := dao.Engine.Where(whereClause).Count(&model.Application{})
-	dao.Engine.Where(whereClause).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&apps)
+
+	whereClause := strings.Join(conditions, " AND ")
+
+	var apps []model.Application
+	total, _ := dao.Engine.Where(whereClause, args...).Count(&model.Application{})
+	dao.Engine.Where(whereClause, args...).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&apps)
 
 	// load group names - batch query to avoid N+1
 	groupIds := make(map[int]bool)
@@ -122,13 +123,13 @@ func (h *AppHandler) GetById(c *gin.Context) {
 }
 
 type AddAppRequest struct {
-	Id        int     `json:"id"`
-	GroupId   *int    `json:"groupId"`
-	Name      string  `json:"name" binding:"required"`
-	Code      string  `json:"code" binding:"required"`
-	ServiceId string  `json:"serviceId"`
-	OwnerIds  []int   `json:"ownerIds"`
-	Remarks   string  `json:"remarks"`
+	Id        int    `json:"id"`
+	GroupId   *int   `json:"groupId"`
+	Name      string `json:"name" binding:"required"`
+	Code      string `json:"code" binding:"required"`
+	ServiceId string `json:"serviceId"`
+	OwnerIds  []int  `json:"ownerIds"`
+	Remarks   string `json:"remarks"`
 }
 
 func (h *AppHandler) Add(c *gin.Context) {

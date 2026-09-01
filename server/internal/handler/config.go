@@ -14,8 +14,8 @@ import (
 )
 
 type ConfigHandler struct {
-	parseService  *service.ConfigParseService
-	permService   *service.PermissionService
+	parseService *service.ConfigParseService
+	permService  *service.PermissionService
 }
 
 func NewConfigHandler(parse *service.ConfigParseService, perm *service.PermissionService) *ConfigHandler {
@@ -47,38 +47,38 @@ func (h *ConfigHandler) List(c *gin.Context) {
 	}
 
 	// 构建查询条件
-	buildConditions := func() []string {
-		conditions := []string{"enabled = 1"}
-		if req.Env != "" {
-			conditions = append(conditions, "env = '"+req.Env+"'")
+	conditions := []string{"enabled = 1"}
+	args := make([]interface{}, 0, 4)
+	if req.Env != "" {
+		conditions = append(conditions, "env = ?")
+		args = append(args, req.Env)
+	}
+	if req.AppId != nil {
+		if *req.AppId <= 0 {
+			conditions = append(conditions, "(app_id is null OR app_id = 0)")
+		} else {
+			conditions = append(conditions, "app_id = ?")
+			args = append(args, *req.AppId)
 		}
-		if req.AppId != nil {
-			if *req.AppId <= 0 {
-				conditions = append(conditions, "(app_id is null OR app_id = 0)")
-			} else {
-				conditions = append(conditions, "app_id = "+strconv.Itoa(*req.AppId))
+	}
+	if !userInfo.IsSuperAdmin() {
+		if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
+			conditions = append(conditions, "group_id = ?")
+			args = append(args, *userInfo.GroupId)
+		} else if len(userInfo.GrantAppIds) > 0 {
+			ids := make([]string, len(userInfo.GrantAppIds))
+			for i, id := range userInfo.GrantAppIds {
+				ids[i] = strconv.Itoa(id)
 			}
+			conditions = append(conditions, "app_id in ("+strings.Join(ids, ",")+")")
 		}
-		if !userInfo.IsSuperAdmin() {
-			if userInfo.IsGroupAdmin() && userInfo.GroupId != nil {
-				conditions = append(conditions, "group_id = "+strconv.Itoa(*userInfo.GroupId))
-			} else if len(userInfo.GrantAppIds) > 0 {
-				ids := make([]string, len(userInfo.GrantAppIds))
-				for i, id := range userInfo.GrantAppIds {
-					ids[i] = strconv.Itoa(id)
-				}
-				conditions = append(conditions, "app_id in ("+strings.Join(ids, ",")+")")
-			}
-		}
-		return conditions
 	}
 
-	conditions := buildConditions()
 	whereClause := strings.Join(conditions, " AND ")
 
 	var configs []model.AppConfig
-	total, _ := dao.Engine.Where(whereClause).Count(&model.AppConfig{})
-	dao.Engine.Where(whereClause).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&configs)
+	total, _ := dao.Engine.Where(whereClause, args...).Count(&model.AppConfig{})
+	dao.Engine.Where(whereClause, args...).Limit(req.PageSize, (req.PageNo-1)*req.PageSize).Find(&configs)
 
 	// build app names (batch query) and collect configIds for client counts
 	configIds := make([]int, 0, len(configs))

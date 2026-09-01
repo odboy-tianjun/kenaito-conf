@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"crypto/rand"
 	"kenaito-conf/server/internal/dao"
 	"kenaito-conf/server/internal/middleware"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/service"
 	"kenaito-conf/server/internal/util"
-	"crypto/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,30 +30,48 @@ func (h *UserHandler) List(c *gin.Context) {
 	enabledStr := c.Query("enabled")
 	userInfo := middleware.GetUserInfo(c)
 
-	buildConditions := func() []string {
+	buildConditions := func() (string, []interface{}) {
 		conditions := []string{"1=1"}
+		args := make([]interface{}, 0, 4)
 		if !userInfo.IsSuperAdmin() && userInfo.GroupId != nil {
-			conditions = append(conditions, "group_id = "+strconv.Itoa(*userInfo.GroupId))
+			conditions = append(conditions, "group_id = ?")
+			args = append(args, *userInfo.GroupId)
 		}
 		if groupIdStr != "" {
-			conditions = append(conditions, "group_id = "+groupIdStr)
+			groupId, err := strconv.Atoi(groupIdStr)
+			if err != nil {
+				return "", nil
+			}
+			conditions = append(conditions, "group_id = ?")
+			args = append(args, groupId)
 		}
 		if name != "" {
-			conditions = append(conditions, "name like '%"+name+"%'")
+			conditions = append(conditions, "name LIKE ?")
+			args = append(args, "%"+name+"%")
 		}
 		if userType != "" {
-			conditions = append(conditions, "type = '"+userType+"'")
+			conditions = append(conditions, "type = ?")
+			args = append(args, userType)
 		}
 		if enabledStr != "" {
-			conditions = append(conditions, "enabled = "+enabledStr)
+			enabled, err := strconv.Atoi(enabledStr)
+			if err != nil {
+				return "", nil
+			}
+			conditions = append(conditions, "enabled = ?")
+			args = append(args, enabled)
 		}
-		return conditions
+		return strings.Join(conditions, " AND "), args
 	}
 
-	whereClause := strings.Join(buildConditions(), " AND ")
+	whereClause, args := buildConditions()
+	if whereClause == "" {
+		c.JSON(http.StatusBadRequest, model.WrapperResponse{Code: 400, Msg: "参数错误"})
+		return
+	}
 
 	var users []model.User
-	dao.Engine.Where(whereClause).Find(&users)
+	dao.Engine.Where(whereClause, args...).Find(&users)
 
 	// load group names
 	var groups []model.BusinessGroup

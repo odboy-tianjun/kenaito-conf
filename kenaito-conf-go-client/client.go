@@ -181,6 +181,7 @@ func (c *Client) fetchChanged() error {
 		"version":      c.config.Version,
 		"lastTime":     c.lastTime,
 		"ignoreGlobal": c.config.IgnoreGlobal,
+		"token":        c.config.Token,
 	}
 	payloadBytes, _ := json.Marshal(payload)
 
@@ -206,8 +207,8 @@ func (c *Client) fetchChanged() error {
 	}
 
 	var wrapper struct {
-		Code int                 `json:"code"`
-		Data map[string]string   `json:"data"`
+		Code int               `json:"code"`
+		Data map[string]string `json:"data"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil {
 		return err

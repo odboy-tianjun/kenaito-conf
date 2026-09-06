@@ -91,6 +91,14 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		return
 	}
 
+	// 游标上界取查询前的数据库时间，保证查询期间发生的更新会在下次增量中返回
+	upperBound, err := dao.Now()
+	if err != nil {
+		logger.SugaredLogger.Errorf("[FetchAllConfigs] get database time error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "服务暂时不可用"})
+		return
+	}
+
 	result := make(map[string]interface{})
 	var configIds []int
 
@@ -125,7 +133,7 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		return
 	}
 
-	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
+	result["latest.fetch.timestamp"] = strconv.FormatInt(upperBound.UnixMilli(), 10)
 
 	// record client instances asynchronously
 	go h.recordClientInstances(getClientIP(c), configIds, req.AppName, req.Env, "fetchAll")
@@ -170,6 +178,15 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 
 	lastUpdateTime := time.UnixMilli(req.LastTime)
 
+	// 以数据库时间为本次查询的固定上界，避免查询与游标生成之间的竞态，
+	// 同时避免多实例应用服务器的时钟偏差。
+	upperBound, err := dao.Now()
+	if err != nil {
+		logger.SugaredLogger.Errorf("[FetchChangedConfigs] get database time error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "服务暂时不可用"})
+		return
+	}
+
 	result := make(map[string]string)
 	var configIds []int
 
@@ -177,8 +194,8 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	var deletedKeys []string
 	if !req.IgnoreGlobal && app.GroupId != nil {
 		var deletedGlobalConfigs []model.AppConfig
-		dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ?",
-			req.Env, version, *app.GroupId, lastUpdateTime).Find(&deletedGlobalConfigs)
+		dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ? AND updated_at <= ?",
+			req.Env, version, *app.GroupId, lastUpdateTime, upperBound).Find(&deletedGlobalConfigs)
 		for _, cfg := range deletedGlobalConfigs {
 			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 			for k := range kvMap {
@@ -187,8 +204,8 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 		}
 	}
 	var deletedAppConfigs []model.AppConfig
-	dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND app_id = ? AND updated_at > ?",
-		req.Env, version, app.Id, lastUpdateTime).Find(&deletedAppConfigs)
+	dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND app_id = ? AND updated_at > ? AND updated_at <= ?",
+		req.Env, version, app.Id, lastUpdateTime, upperBound).Find(&deletedAppConfigs)
 	for _, cfg := range deletedAppConfigs {
 		kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 		for k := range kvMap {
@@ -202,8 +219,8 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	// load global changed configs
 	if !req.IgnoreGlobal && app.GroupId != nil {
 		var globalConfigs []model.AppConfig
-		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ?",
-			req.Env, version, *app.GroupId, lastUpdateTime).Find(&globalConfigs)
+		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ? AND updated_at <= ?",
+			req.Env, version, *app.GroupId, lastUpdateTime, upperBound).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
 			configIds = append(configIds, cfg.Id)
 			h.addChangedConfigs(result, &cfg, req.FetchAll)
@@ -212,14 +229,14 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 
 	// load app changed configs
 	var appConfigs1 []model.AppConfig
-	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ? AND updated_at > ?",
-		req.Env, version, app.Id, lastUpdateTime).Find(&appConfigs1)
+	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ? AND updated_at > ? AND updated_at <= ?",
+		req.Env, version, app.Id, lastUpdateTime, upperBound).Find(&appConfigs1)
 	for _, cfg := range appConfigs1 {
 		configIds = append(configIds, cfg.Id)
 		h.addChangedConfigs(result, &cfg, req.FetchAll)
 	}
 
-	result["latest.fetch.timestamp"] = strconv.FormatInt(time.Now().UnixMilli(), 10)
+	result["latest.fetch.timestamp"] = strconv.FormatInt(upperBound.UnixMilli(), 10)
 
 	// query all config ids for this app to record client instances
 	var allConfigIds []int

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"kenaito-conf/server/internal/dao"
+	"kenaito-conf/server/internal/logger"
 	"kenaito-conf/server/internal/middleware"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/service"
@@ -162,7 +163,7 @@ type AddConfigRequest struct {
 	GroupId  *int   `json:"groupId"`
 	AppId    *int   `json:"appId"`
 	Env      string `json:"env" binding:"required"`
-	Version  string `json:"version"`
+	Version  string `json:"version" binding:"required"`
 	Name     string `json:"name"`
 	Type     int    `json:"type" binding:"required"`
 	Contents string `json:"contents"`
@@ -201,6 +202,13 @@ func (h *ConfigHandler) Add(c *gin.Context) {
 		}
 	}
 
+	now, err := dao.Now()
+	if err != nil {
+		logger.SugaredLogger.Errorf("[ConfigHandler.Add] get database time error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "保存失败"})
+		return
+	}
+
 	config := model.AppConfig{
 		GroupId:   req.GroupId,
 		AppId:     req.AppId,
@@ -210,9 +218,9 @@ func (h *ConfigHandler) Add(c *gin.Context) {
 		Type:      req.Type,
 		Contents:  req.Contents,
 		Enabled:   true,
-		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
+		CreatedAt: &now,
 		CreatedBy: userInfo.Name,
-		UpdatedAt: func() *time.Time { t := time.Now(); return &t }(),
+		UpdatedAt: &now,
 		UpdatedBy: userInfo.Name,
 	}
 
@@ -257,13 +265,18 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 	}
 
 	// save history
-	h.saveHistory(&config, userInfo.Name)
+	h.saveHistory(&config, userInfo.Name, "update")
 
 	originalContents := config.Contents
 	config.Contents = req.Contents
 	config.Version = req.Version
 	config.UpdatedBy = userInfo.Name
-	now := time.Now()
+	now, err := dao.Now()
+	if err != nil {
+		logger.SugaredLogger.Errorf("[ConfigHandler.Update] get database time error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "保存失败"})
+		return
+	}
 	config.UpdatedAt = &now
 
 	dao.Engine.ID(config.Id).Cols("contents", "version", "updated_by", "updated_at").Update(&config)
@@ -289,9 +302,17 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 		return
 	}
 
+	// 记录删除前的配置内容
+	h.saveHistory(&config, userInfo.Name, "delete")
+
 	config.Enabled = false
 	config.UpdatedBy = userInfo.Name
-	now := time.Now()
+	now, err := dao.Now()
+	if err != nil {
+		logger.SugaredLogger.Errorf("[ConfigHandler.Delete] get database time error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "删除失败"})
+		return
+	}
 	config.UpdatedAt = &now
 	dao.Engine.ID(config.Id).Cols("enabled", "updated_by", "updated_at").Update(&config)
 
@@ -301,7 +322,7 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 func (h *ConfigHandler) GetHistory(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var histories []model.AppConfigHistory
-	dao.Engine.Where("origin_id = ?", id).OrderBy("id desc").Limit(5).Find(&histories)
+	dao.Engine.Where("origin_id = ?", id).OrderBy("id desc").Find(&histories)
 
 	if len(histories) > 0 {
 		var currentConfig model.AppConfig
@@ -313,6 +334,38 @@ func (h *ConfigHandler) GetHistory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: histories})
+}
+
+// DeleteHistory 手动删除单条配置历史
+func (h *ConfigHandler) DeleteHistory(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var history model.AppConfigHistory
+	has, _ := dao.Engine.ID(id).Get(&history)
+	if !has {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "历史记录不存在"})
+		return
+	}
+
+	userInfo := middleware.GetUserInfo(c)
+	var config model.AppConfig
+	if has, _ := dao.Engine.ID(history.OriginId).Get(&config); has {
+		if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RW"); err != nil {
+			c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
+			return
+		}
+	} else if !userInfo.IsSuperAdmin() {
+		// 原配置已不存在时，只有超级管理员可以清理历史
+		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "只有超级管理员才能删除该历史记录"})
+		return
+	}
+
+	if _, err := dao.Engine.ID(id).Delete(&model.AppConfigHistory{}); err != nil {
+		logger.SugaredLogger.Errorf("[ConfigHandler.DeleteHistory] delete history error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "删除失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: true})
 }
 
 func (h *ConfigHandler) Rollback(c *gin.Context) {
@@ -332,9 +385,17 @@ func (h *ConfigHandler) Rollback(c *gin.Context) {
 			return
 		}
 
+		// 记录回滚前的配置内容
+		h.saveHistory(&config, userInfo.Name, "rollback")
+
 		config.Contents = history.Contents
 		config.UpdatedBy = userInfo.Name
-		now := time.Now()
+		now, err := dao.Now()
+		if err != nil {
+			logger.SugaredLogger.Errorf("[ConfigHandler.Rollback] get database time error: %v", err)
+			c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "回滚失败"})
+			return
+		}
 		config.UpdatedAt = &now
 		dao.Engine.ID(config.Id).Cols("contents", "updated_by", "updated_at").Update(&config)
 	}
@@ -353,7 +414,7 @@ func (h *ConfigHandler) buildAppNames(config *model.AppConfig) string {
 	return ""
 }
 
-func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator string) {
+func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator, operate string) {
 	history := model.AppConfigHistory{
 		OriginId:  config.Id,
 		AppId:     config.AppId,
@@ -362,6 +423,7 @@ func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator string) {
 		Version:   config.Version,
 		Name:      config.Name,
 		Type:      config.Type,
+		Operate:   operate,
 		Contents:  config.Contents,
 		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
 		CreatedBy: operator,

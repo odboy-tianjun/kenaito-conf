@@ -67,6 +67,7 @@ func main() {
 		admin.POST("/config/update", configHandler.Update)
 		admin.POST("/config/delete/:id", configHandler.Delete)
 		admin.GET("/config/configHistories/:id", configHandler.GetHistory)
+		admin.POST("/config/history/delete/:id", configHandler.DeleteHistory)
 		admin.POST("/config/rollback/:id", configHandler.Rollback)
 
 		// app management

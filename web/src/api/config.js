@@ -51,3 +51,10 @@ export function rollbackConfig(id) {
     method: 'post'
   })
 }
+
+export function deleteConfigHistory(id) {
+  return request({
+    url: `/admin/config/history/delete/${id}`,
+    method: 'post'
+  })
+}

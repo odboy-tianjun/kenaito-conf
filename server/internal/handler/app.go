@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"kenaito-conf/server/internal/dao"
+	"kenaito-conf/server/internal/logger"
 	"kenaito-conf/server/internal/middleware"
 	"kenaito-conf/server/internal/model"
 	"net/http"
@@ -258,14 +259,21 @@ func (h *AppHandler) Delete(c *gin.Context) {
 		return
 	}
 
+	now, err := dao.Now()
+	if err != nil {
+		logger.SugaredLogger.Errorf("[AppHandler.Delete] get database time error: %v", err)
+		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "删除失败"})
+		return
+	}
+
 	app.Enabled = false
 	app.UpdatedBy = userInfo.Name
-	now := time.Now()
 	app.UpdatedAt = &now
 	dao.Engine.ID(app.Id).Cols("enabled", "updated_by", "updated_at").Update(&app)
 
-	// soft delete related configs
-	dao.Engine.Where("app_id = ?", id).Cols("enabled").Update(&model.AppConfig{Enabled: false})
+	// soft delete related configs，同时更新 updated_at 让增量同步识别到删除
+	dao.Engine.Where("app_id = ?", id).Cols("enabled", "updated_at").
+		Update(&model.AppConfig{Enabled: false, UpdatedAt: &now})
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0})
 }

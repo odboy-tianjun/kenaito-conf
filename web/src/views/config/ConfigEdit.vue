@@ -1,7 +1,7 @@
 <template>
   <el-card>
     <div slot="header">编辑配置</div>
-    <el-form :model="form" ref="form" label-width="100px" v-loading="loading">
+    <el-form :model="form" :rules="rules" ref="form" label-width="100px" v-loading="loading">
       <el-form-item label="配置名称">
         <el-input v-model="form.name" disabled></el-input>
       </el-form-item>
@@ -11,7 +11,7 @@
       <el-form-item label="所属应用">
         <el-input :value="form.appNames" disabled></el-input>
       </el-form-item>
-      <el-form-item label="版本">
+      <el-form-item label="版本" prop="version">
         <el-input v-model="form.version"></el-input>
       </el-form-item>
       <el-form-item label="配置内容">
@@ -32,6 +32,9 @@ export default {
   data() {
     return {
       form: {},
+      rules: {
+        version: [{ required: true, message: '请输入版本', trigger: 'blur' }]
+      },
       loading: false
     }
   },
@@ -50,6 +53,7 @@ export default {
     },
     async handleSubmit() {
       try {
+        await this.$refs.form.validate()
         await updateConfig(this.form)
         this.$message.success('保存成功')
         if (this.form.appId) {

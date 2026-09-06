@@ -23,7 +23,7 @@
           <el-option v-for="p in profiles" :key="p.value" :label="p.label" :value="p.value"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="版本">
+      <el-form-item label="版本" prop="version">
         <el-input v-model="form.version" placeholder="latest"></el-input>
       </el-form-item>
       <el-form-item label="配置格式">
@@ -66,6 +66,7 @@ export default {
       },
       rules: {
         env: [{ required: true, message: '请选择环境', trigger: 'change' }],
+        version: [{ required: true, message: '请输入版本', trigger: 'blur' }],
         contents: [{ required: true, message: '请输入配置内容', trigger: 'blur' }]
       },
       groups: [],

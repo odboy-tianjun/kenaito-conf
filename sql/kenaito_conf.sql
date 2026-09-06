@@ -99,9 +99,9 @@ CREATE TABLE `app_config` (
   `type` smallint DEFAULT NULL,
   `contents` text,
   `enabled` tinyint(1) DEFAULT '1',
-  `created_at` datetime DEFAULT NULL,
+  `created_at` datetime(3) DEFAULT NULL,
   `created_by` varchar(32) DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
+  `updated_at` datetime(3) DEFAULT NULL,
   `updated_by` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
@@ -150,6 +150,7 @@ CREATE TABLE `app_config_history` (
   `version` varchar(32) DEFAULT NULL,
   `name` varchar(32) DEFAULT NULL,
   `type` smallint DEFAULT NULL,
+  `operate` varchar(16) DEFAULT NULL,
   `contents` text,
   `created_at` datetime DEFAULT NULL,
   `created_by` varchar(32) DEFAULT NULL,

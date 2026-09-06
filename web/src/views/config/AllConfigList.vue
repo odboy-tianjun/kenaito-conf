@@ -62,9 +62,17 @@
     ></el-pagination>
 
     <el-dialog title="变更历史" :visible.sync="historyVisible" width="900px">
-      <el-table :data="historyList" border stripe>
+      <el-table :data="historyList" border stripe max-height="500">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
         <el-table-column prop="createdBy" label="操作人" width="100"></el-table-column>
+        <el-table-column label="操作类型" width="100">
+          <template slot-scope="scope">
+            <span v-if="scope.row.operate === 'delete'" style="color: #F56C6C">删除</span>
+            <span v-else-if="scope.row.operate === 'rollback'">回滚</span>
+            <span v-else-if="scope.row.operate === 'update'">更新</span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作时间" width="180">
           <template slot-scope="scope">
             {{ formatTime(scope.row.createdAt) }}
@@ -73,7 +81,8 @@
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button type="text" @click="viewHistoryContent(scope.row)">查看内容</el-button>
-            <el-button type="text" @click="handleRollback(scope.row)">回滚到此版本</el-button>
+            <el-button v-if="scope.row.operate !== 'delete'" type="text" @click="handleRollback(scope.row)">回滚到此版本</el-button>
+            <el-button type="text" style="color: #F56C6C" @click="handleDeleteHistory(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -133,7 +142,7 @@
 </template>
 
 <script>
-import { getConfigList, deleteConfig, getConfigHistory, rollbackConfig, getConfig } from '../../api/config'
+import { getConfigList, deleteConfig, getConfigHistory, rollbackConfig, getConfig, deleteConfigHistory } from '../../api/config'
 import { getClientListByConfig } from '../../api/client'
 import request from '../../api/request'
 
@@ -311,6 +320,15 @@ export default {
         const res = await getConfigHistory(row.id)
         this.historyList = res.data || []
         this.historyVisible = true
+      } catch (e) {}
+    },
+    async handleDeleteHistory(row) {
+      try {
+        await this.$confirm('确定删除这条历史记录？删除后不可恢复。')
+        await deleteConfigHistory(row.id)
+        this.$message.success('删除成功')
+        const res = await getConfigHistory(row.originId)
+        this.historyList = res.data || []
       } catch (e) {}
     },
     async viewHistoryContent(row) {

@@ -108,8 +108,12 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0)",
 			req.Env, version, *app.GroupId).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
+			kvMap, err := h.parseService.ParseConfigToKVMap(&cfg)
+			if err != nil {
+				logger.SugaredLogger.Errorf("[FetchAllConfigs] parse config %d (%s) error: %v", cfg.Id, cfg.Name, err)
+				continue
+			}
 			configIds = append(configIds, cfg.Id)
-			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 			for k, v := range kvMap {
 				result[k] = v
 			}
@@ -121,8 +125,12 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ?",
 		req.Env, version, app.Id).Find(&appConfigs)
 	for _, cfg := range appConfigs {
+		kvMap, err := h.parseService.ParseConfigToKVMap(&cfg)
+		if err != nil {
+			logger.SugaredLogger.Errorf("[FetchAllConfigs] parse config %d (%s) error: %v", cfg.Id, cfg.Name, err)
+			continue
+		}
 		configIds = append(configIds, cfg.Id)
-		kvMap := h.parseService.ParseConfigToKVMap(&cfg)
 		for k, v := range kvMap {
 			result[k] = v
 		}
@@ -197,7 +205,11 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ? AND updated_at <= ?",
 			req.Env, version, *app.GroupId, lastUpdateTime, upperBound).Find(&deletedGlobalConfigs)
 		for _, cfg := range deletedGlobalConfigs {
-			kvMap := h.parseService.ParseConfigToKVMap(&cfg)
+			kvMap, err := h.parseService.ParseConfigToKVMap(&cfg)
+			if err != nil {
+				logger.SugaredLogger.Errorf("[FetchChangedConfigs] parse deleted config %d (%s) error: %v", cfg.Id, cfg.Name, err)
+				continue
+			}
 			for k := range kvMap {
 				deletedKeys = append(deletedKeys, k)
 			}
@@ -207,7 +219,11 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 0 AND app_id = ? AND updated_at > ? AND updated_at <= ?",
 		req.Env, version, app.Id, lastUpdateTime, upperBound).Find(&deletedAppConfigs)
 	for _, cfg := range deletedAppConfigs {
-		kvMap := h.parseService.ParseConfigToKVMap(&cfg)
+		kvMap, err := h.parseService.ParseConfigToKVMap(&cfg)
+		if err != nil {
+			logger.SugaredLogger.Errorf("[FetchChangedConfigs] parse deleted config %d (%s) error: %v", cfg.Id, cfg.Name, err)
+			continue
+		}
 		for k := range kvMap {
 			deletedKeys = append(deletedKeys, k)
 		}
@@ -222,8 +238,9 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ? AND updated_at <= ?",
 			req.Env, version, *app.GroupId, lastUpdateTime, upperBound).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
-			configIds = append(configIds, cfg.Id)
-			h.addChangedConfigs(result, &cfg, req.FetchAll)
+			if h.addChangedConfigs(result, &cfg, req.FetchAll) {
+				configIds = append(configIds, cfg.Id)
+			}
 		}
 	}
 
@@ -232,8 +249,9 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ? AND updated_at > ? AND updated_at <= ?",
 		req.Env, version, app.Id, lastUpdateTime, upperBound).Find(&appConfigs1)
 	for _, cfg := range appConfigs1 {
-		configIds = append(configIds, cfg.Id)
-		h.addChangedConfigs(result, &cfg, req.FetchAll)
+		if h.addChangedConfigs(result, &cfg, req.FetchAll) {
+			configIds = append(configIds, cfg.Id)
+		}
 	}
 
 	result["latest.fetch.timestamp"] = strconv.FormatInt(upperBound.UnixMilli(), 10)
@@ -266,11 +284,16 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: result})
 }
 
-func (h *ConfigApiHandler) addChangedConfigs(result map[string]string, config *model.AppConfig, fetchAll bool) {
-	kvMap := h.parseService.ParseConfigToKVMap(config)
+func (h *ConfigApiHandler) addChangedConfigs(result map[string]string, config *model.AppConfig, fetchAll bool) bool {
+	kvMap, err := h.parseService.ParseConfigToKVMap(config)
+	if err != nil {
+		logger.SugaredLogger.Errorf("[FetchChangedConfigs] parse config %d (%s) error: %v", config.Id, config.Name, err)
+		return false
+	}
 	for k, v := range kvMap {
 		result[k] = fmt.Sprintf("%v", v)
 	}
+	return true
 }
 
 func (h *ConfigApiHandler) recordClientInstances(ip string, configIds []int, appName, env, fetchType string) {

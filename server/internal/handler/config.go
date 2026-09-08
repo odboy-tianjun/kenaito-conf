@@ -231,6 +231,11 @@ func (h *ConfigHandler) Add(c *gin.Context) {
 		}
 	}
 
+	if err := h.parseService.ValidateConfig(&config); err != nil {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: err.Error()})
+		return
+	}
+
 	if _, err := dao.Engine.Insert(&config); err != nil {
 		c.JSON(http.StatusOK, model.WrapperResponse{Code: 500, Msg: "保存失败"})
 		return
@@ -261,6 +266,15 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 	userInfo := middleware.GetUserInfo(c)
 	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RW"); err != nil {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
+		return
+	}
+
+	// 校验新内容语法，避免保存后客户端解析失败
+	newConfig := config
+	newConfig.Contents = req.Contents
+	newConfig.Version = req.Version
+	if err := h.parseService.ValidateConfig(&newConfig); err != nil {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: err.Error()})
 		return
 	}
 

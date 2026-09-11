@@ -155,7 +155,6 @@ type FetchChangedRequest struct {
 	Version      string `json:"version"`
 	LastTime     int64  `json:"lastTime" binding:"required"`
 	IgnoreGlobal bool   `json:"ignoreGlobal"`
-	FetchAll     bool   `json:"fetchAll"`
 	Token        string `json:"token"`
 }
 
@@ -238,7 +237,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 		dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND group_id = ? AND (app_id is null OR app_id = 0) AND updated_at > ? AND updated_at <= ?",
 			req.Env, version, *app.GroupId, lastUpdateTime, upperBound).Find(&globalConfigs)
 		for _, cfg := range globalConfigs {
-			if h.addChangedConfigs(result, &cfg, req.FetchAll) {
+			if h.addChangedConfigs(result, &cfg) {
 				configIds = append(configIds, cfg.Id)
 			}
 		}
@@ -249,7 +248,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	dao.Engine.Where("env = ? AND version = ? AND enabled = 1 AND app_id = ? AND updated_at > ? AND updated_at <= ?",
 		req.Env, version, app.Id, lastUpdateTime, upperBound).Find(&appConfigs1)
 	for _, cfg := range appConfigs1 {
-		if h.addChangedConfigs(result, &cfg, req.FetchAll) {
+		if h.addChangedConfigs(result, &cfg) {
 			configIds = append(configIds, cfg.Id)
 		}
 	}
@@ -284,7 +283,7 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: result})
 }
 
-func (h *ConfigApiHandler) addChangedConfigs(result map[string]string, config *model.AppConfig, fetchAll bool) bool {
+func (h *ConfigApiHandler) addChangedConfigs(result map[string]string, config *model.AppConfig) bool {
 	kvMap, err := h.parseService.ParseConfigToKVMap(config)
 	if err != nil {
 		logger.SugaredLogger.Errorf("[FetchChangedConfigs] parse config %d (%s) error: %v", config.Id, config.Name, err)

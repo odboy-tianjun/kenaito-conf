@@ -48,12 +48,15 @@ public class InternalConfigChangeListener {
 			params.put("ignoreGlobal", String.valueOf(context.isIgnoreGlobal()));
 		}
 		params.put("lastTime", Long.parseLong(ConfigcenterContext.getProperty(LATEST_FETCH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))));
+		if (context.getToken() != null && !context.getToken().isEmpty()) {
+			params.put("token", context.getToken());
+		}
 
 		hbScheduledExecutor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					String safeUrl = ConfigcenterContext.getInstance().buildTokenParameter(url);
+					String safeUrl = url;
 					String response = ConfigcenterContext.httpPostJson(safeUrl, JSON.toJSONString(params));
 					if (response != null) {
 						Map<String, Object> map = JSON.parseObject(response, Map.class);

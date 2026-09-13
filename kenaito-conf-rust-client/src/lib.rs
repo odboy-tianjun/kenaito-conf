@@ -238,6 +238,7 @@ impl Client {
             "version": self.config.version,
             "lastTime": *self.last_time.lock().unwrap(),
             "ignoreGlobal": self.config.ignore_global,
+            "token": self.config.token,
         });
 
         let resp = self.http_post(&url, &payload.to_string())?;

@@ -136,7 +136,8 @@ public class Client
             env = _config.Env,
             version = _config.Version,
             lastTime = _lastTime,
-            ignoreGlobal = _config.IgnoreGlobal
+            ignoreGlobal = _config.IgnoreGlobal,
+            token = _config.Token
         };
         var content = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync(url, content);

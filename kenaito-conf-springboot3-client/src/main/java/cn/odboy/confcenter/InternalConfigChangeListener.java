@@ -82,13 +82,16 @@ public class InternalConfigChangeListener {
 	@SuppressWarnings("unchecked")
 	private void poll(ConfigcenterContext context, String[] baseUrls) {
 		for (String baseUrl : baseUrls) {
-			String url = context.buildTokenParameter(baseUrl + "/api/fetchChangedConfigs");
+			String url = baseUrl + "/api/fetchChangedConfigs";
 			Map<String, Object> params = new HashMap<>();
 			params.put("version", context.getVersion());
 			params.put("appName", context.getApp());
 			params.put("env", context.getEnv());
 			params.put("ignoreGlobal", context.isIgnoreGlobal());
 			params.put("lastTime", lastTime);
+			if (context.getToken() != null && !context.getToken().isEmpty()) {
+				params.put("token", context.getToken());
+			}
 
 			String response;
 			try {

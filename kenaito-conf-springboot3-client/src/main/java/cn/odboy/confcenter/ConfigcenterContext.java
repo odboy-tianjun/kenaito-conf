@@ -645,6 +645,10 @@ public class ConfigcenterContext {
 		}
 	}
 
+	public String getToken() {
+		return token;
+	}
+
 	public String buildTokenParameter(String url) {
 		if (StringUtils.isBlank(token)) {
 			return url;

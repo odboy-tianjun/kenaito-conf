@@ -86,7 +86,12 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 	}
 
 	// validate token if app has token configured
-	if app.Token != "" && app.Token != req.Token {
+	// 兼容旧版客户端把 token 放在 URL query 中的行为
+	token := req.Token
+	if token == "" {
+		token = c.Query("token")
+	}
+	if app.Token != "" && app.Token != token {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "Token 无效"})
 		return
 	}
@@ -173,7 +178,12 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 	}
 
 	// validate token if app has token configured
-	if app.Token != "" && app.Token != req.Token {
+	// 兼容旧版客户端把 token 放在 URL query 中的行为
+	token := req.Token
+	if token == "" {
+		token = c.Query("token")
+	}
+	if app.Token != "" && app.Token != token {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "Token 无效"})
 		return
 	}

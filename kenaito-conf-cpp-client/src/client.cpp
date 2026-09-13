@@ -200,6 +200,7 @@ bool Client::fetch_changed() {
     payload["version"] = config_.version;
     payload["lastTime"] = last_time_;
     payload["ignoreGlobal"] = config_.ignore_global;
+    payload["token"] = config_.token;
 
     std::string resp = http_post(url, payload.dump());
     if (resp.empty()) {

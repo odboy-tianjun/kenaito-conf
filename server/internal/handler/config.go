@@ -149,7 +149,7 @@ func (h *ConfigHandler) GetById(c *gin.Context) {
 	}
 
 	userInfo := middleware.GetUserInfo(c)
-	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RO"); err != nil {
+	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
 		return
 	}
@@ -183,7 +183,7 @@ func (h *ConfigHandler) Add(c *gin.Context) {
 			c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "全局配置需要指定所属业务组"})
 			return
 		}
-		if err := h.permService.RequirePermission(userInfo, req.GroupId, nil, "RW"); err != nil {
+		if err := h.permService.RequirePermission(userInfo, req.GroupId, nil); err != nil {
 			c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
 			return
 		}
@@ -264,7 +264,7 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 	}
 
 	userInfo := middleware.GetUserInfo(c)
-	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RW"); err != nil {
+	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
 		return
 	}
@@ -311,7 +311,7 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 	}
 
 	userInfo := middleware.GetUserInfo(c)
-	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RW"); err != nil {
+	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
 		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
 		return
 	}
@@ -335,19 +335,51 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 
 func (h *ConfigHandler) GetHistory(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	var histories []model.AppConfigHistory
-	dao.Engine.Where("origin_id = ?", id).OrderBy("id desc").Find(&histories)
 
-	if len(histories) > 0 {
-		var currentConfig model.AppConfig
-		if has, _ := dao.Engine.ID(histories[0].OriginId).Get(&currentConfig); has {
-			for i := range histories {
-				histories[i].ActiveContents = currentConfig.Contents
-			}
+	var config model.AppConfig
+	has, _ := dao.Engine.ID(id).Get(&config)
+
+	userInfo := middleware.GetUserInfo(c)
+	if has {
+		if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
+			c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
+			return
+		}
+	} else if !userInfo.IsSuperAdmin() {
+		// 配置已被物理删除时，只有超级管理员可以查看残留历史
+		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: "只有超级管理员才能查看该配置历史"})
+		return
+	}
+
+	pageNo, _ := strconv.Atoi(c.DefaultQuery("pageNo", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	if pageNo < 1 {
+		pageNo = 1
+	}
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	if pageSize > 200 {
+		pageSize = 200
+	}
+
+	histories := make([]model.AppConfigHistory, 0)
+	total, _ := dao.Engine.Where("origin_id = ?", id).Count(&model.AppConfigHistory{})
+	dao.Engine.Where("origin_id = ?", id).OrderBy("id desc").
+		Limit(pageSize, (pageNo-1)*pageSize).Find(&histories)
+
+	if has {
+		for i := range histories {
+			histories[i].ActiveContents = config.Contents
 		}
 	}
 
-	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: histories})
+	c.JSON(http.StatusOK, model.PageResult{
+		PageNo:   pageNo,
+		PageSize: pageSize,
+		Total:    total,
+		Data:     histories,
+	})
 }
 
 // DeleteHistory 手动删除单条配置历史
@@ -363,7 +395,7 @@ func (h *ConfigHandler) DeleteHistory(c *gin.Context) {
 	userInfo := middleware.GetUserInfo(c)
 	var config model.AppConfig
 	if has, _ := dao.Engine.ID(history.OriginId).Get(&config); has {
-		if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RW"); err != nil {
+		if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
 			c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
 			return
 		}
@@ -394,7 +426,7 @@ func (h *ConfigHandler) Rollback(c *gin.Context) {
 	var config model.AppConfig
 	if has, _ := dao.Engine.ID(history.OriginId).Get(&config); has {
 		userInfo := middleware.GetUserInfo(c)
-		if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId, "RW"); err != nil {
+		if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
 			c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
 			return
 		}

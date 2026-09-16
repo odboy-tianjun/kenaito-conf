@@ -18,19 +18,18 @@ func (s *PermissionService) RequireSuperAdmin(userInfo *model.LoginUserInfo) err
 	return nil
 }
 
-func (s *PermissionService) RequirePermission(userInfo *model.LoginUserInfo, groupId *int, appId *int, operate string) error {
+func (s *PermissionService) RequirePermission(userInfo *model.LoginUserInfo, groupId *int, appId *int) error {
 	if userInfo.IsSuperAdmin() {
 		return nil
 	}
-	if groupId != nil && userInfo.GroupId != nil && *groupId == *userInfo.GroupId {
+	if userInfo.IsGroupAdmin() && groupId != nil && userInfo.GroupId != nil && *groupId == *userInfo.GroupId {
 		return nil
 	}
 	if appId == nil || *appId == 0 {
 		return errors.New("你没有全局配置权限")
 	}
-	permCode := buildPermissionCode(*appId, operate)
-	for _, p := range userInfo.GrantPermissons {
-		if p == permCode {
+	for _, id := range userInfo.GrantAppIds {
+		if id == *appId {
 			return nil
 		}
 	}

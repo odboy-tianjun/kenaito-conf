@@ -23,13 +23,12 @@ func (User) TableName() string {
 }
 
 type LoginUserInfo struct {
-	Id              string   `json:"id"`
-	Name            string   `json:"name"`
-	Type            string   `json:"type"`
-	GroupId         *int     `json:"groupId"`
-	GrantAppIds     []int    `json:"grantAppIds"`
-	GrantPermissons []string `json:"grantPermissons"`
-	GroupMaster     bool     `json:"groupMaster"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	GroupId     *int   `json:"groupId"`
+	GrantAppIds []int  `json:"grantAppIds"`
+	GroupMaster bool   `json:"groupMaster"`
 }
 
 func (u *LoginUserInfo) IsSuperAdmin() bool {

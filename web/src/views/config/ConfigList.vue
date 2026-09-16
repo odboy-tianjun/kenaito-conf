@@ -81,6 +81,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        style="margin-top: 10px; text-align: right"
+        @current-change="handleHistoryPageChange"
+        :current-page="historyQuery.pageNo"
+        :page-size="historyQuery.pageSize"
+        :total="historyTotal"
+        layout="total, prev, pager, next"
+        small
+      ></el-pagination>
     </el-dialog>
 
     <el-dialog title="历史版本对比" :visible.sync="contentVisible" width="1200px" append-to-body>
@@ -241,6 +250,8 @@ export default {
       profiles: [],
       historyVisible: false,
       historyList: [],
+      historyTotal: 0,
+      historyQuery: { pageNo: 1, pageSize: 10 },
       currentConfig: null,
       contentVisible: false,
       currentHistory: {},
@@ -302,19 +313,31 @@ export default {
     },
     async showHistory(row) {
       this.currentConfig = row
+      this.historyQuery.pageNo = 1
+      await this.loadHistory()
+      this.historyVisible = true
+    },
+    async loadHistory() {
+      if (!this.currentConfig) return
       try {
-        const res = await getConfigHistory(row.id)
+        const res = await getConfigHistory(this.currentConfig.id, this.historyQuery)
         this.historyList = res.data || []
-        this.historyVisible = true
+        this.historyTotal = res.total || 0
       } catch (e) {}
+    },
+    handleHistoryPageChange(page) {
+      this.historyQuery.pageNo = page
+      this.loadHistory()
     },
     async handleDeleteHistory(row) {
       try {
         await this.$confirm('确定删除这条历史记录？删除后不可恢复。')
         await deleteConfigHistory(row.id)
         this.$message.success('删除成功')
-        const res = await getConfigHistory(row.originId)
-        this.historyList = res.data || []
+        if (this.historyList.length === 1 && this.historyQuery.pageNo > 1) {
+          this.historyQuery.pageNo--
+        }
+        await this.loadHistory()
       } catch (e) {}
     },
     async viewHistoryContent(row) {

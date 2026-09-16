@@ -45,12 +45,11 @@ func (s *AuthService) Login(userName, password string) (string, *model.LoginUser
 	}
 
 	userInfo := &model.LoginUserInfo{
-		Id:              strconv.Itoa(user.Id),
-		Name:            user.Name,
-		Type:            user.Type,
-		GroupId:         user.GroupId,
-		GrantAppIds:     make([]int, 0),
-		GrantPermissons: make([]string, 0),
+		Id:          strconv.Itoa(user.Id),
+		Name:        user.Name,
+		Type:        user.Type,
+		GroupId:     user.GroupId,
+		GrantAppIds: make([]int, 0),
 	}
 
 	// load permissions
@@ -120,12 +119,11 @@ func (s *AuthService) ValidateToken(tokenString string) (*model.LoginUserInfo, e
 	}
 
 	userInfo := &model.LoginUserInfo{
-		Id:              strconv.Itoa(user.Id),
-		Name:            user.Name,
-		Type:            user.Type,
-		GroupId:         user.GroupId,
-		GrantAppIds:     make([]int, 0),
-		GrantPermissons: make([]string, 0),
+		Id:          strconv.Itoa(user.Id),
+		Name:        user.Name,
+		Type:        user.Type,
+		GroupId:     user.GroupId,
+		GrantAppIds: make([]int, 0),
 	}
 	s.loadPermissions(userInfo, user.Id)
 	return userInfo, nil
@@ -146,10 +144,5 @@ func (s *AuthService) loadPermissions(userInfo *model.LoginUserInfo, userId int)
 	}
 	for _, app := range apps {
 		userInfo.GrantAppIds = append(userInfo.GrantAppIds, app.Id)
-		userInfo.GrantPermissons = append(userInfo.GrantPermissons, buildPermissionCode(app.Id, "RW"))
 	}
-}
-
-func buildPermissionCode(appId int, operate string) string {
-	return strconv.Itoa(appId) + ":" + operate
 }

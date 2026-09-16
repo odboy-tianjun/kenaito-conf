@@ -38,10 +38,11 @@ export function deleteConfig(id) {
   })
 }
 
-export function getConfigHistory(id) {
+export function getConfigHistory(id, params) {
   return request({
     url: `/admin/config/configHistories/${id}`,
-    method: 'get'
+    method: 'get',
+    params
   })
 }
 

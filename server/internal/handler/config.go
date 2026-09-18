@@ -278,19 +278,20 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// save history
-	h.saveHistory(&config, userInfo.Name, "update")
-
-	originalContents := config.Contents
-	config.Contents = req.Contents
-	config.Version = req.Version
-	config.UpdatedBy = userInfo.Name
 	now, err := dao.Now()
 	if err != nil {
 		logger.SugaredLogger.Errorf("[ConfigHandler.Update] get database time error: %v", err)
 		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "保存失败"})
 		return
 	}
+
+	// save history
+	h.saveHistory(&config, userInfo.Name, "update", now)
+
+	originalContents := config.Contents
+	config.Contents = req.Contents
+	config.Version = req.Version
+	config.UpdatedBy = userInfo.Name
 	config.UpdatedAt = &now
 
 	dao.Engine.ID(config.Id).Cols("contents", "version", "updated_by", "updated_at").Update(&config)
@@ -316,17 +317,18 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	// 记录删除前的配置内容
-	h.saveHistory(&config, userInfo.Name, "delete")
-
-	config.Enabled = false
-	config.UpdatedBy = userInfo.Name
 	now, err := dao.Now()
 	if err != nil {
 		logger.SugaredLogger.Errorf("[ConfigHandler.Delete] get database time error: %v", err)
 		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "删除失败"})
 		return
 	}
+
+	// 记录删除前的配置内容
+	h.saveHistory(&config, userInfo.Name, "delete", now)
+
+	config.Enabled = false
+	config.UpdatedBy = userInfo.Name
 	config.UpdatedAt = &now
 	dao.Engine.ID(config.Id).Cols("enabled", "updated_by", "updated_at").Update(&config)
 
@@ -431,17 +433,18 @@ func (h *ConfigHandler) Rollback(c *gin.Context) {
 			return
 		}
 
-		// 记录回滚前的配置内容
-		h.saveHistory(&config, userInfo.Name, "rollback")
-
-		config.Contents = history.Contents
-		config.UpdatedBy = userInfo.Name
 		now, err := dao.Now()
 		if err != nil {
 			logger.SugaredLogger.Errorf("[ConfigHandler.Rollback] get database time error: %v", err)
 			c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "回滚失败"})
 			return
 		}
+
+		// 记录回滚前的配置内容
+		h.saveHistory(&config, userInfo.Name, "rollback", now)
+
+		config.Contents = history.Contents
+		config.UpdatedBy = userInfo.Name
 		config.UpdatedAt = &now
 		dao.Engine.ID(config.Id).Cols("contents", "updated_by", "updated_at").Update(&config)
 	}
@@ -460,7 +463,7 @@ func (h *ConfigHandler) buildAppNames(config *model.AppConfig) string {
 	return ""
 }
 
-func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator, operate string) {
+func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator, operate string, createdAt time.Time) {
 	history := model.AppConfigHistory{
 		OriginId:  config.Id,
 		AppId:     config.AppId,
@@ -471,7 +474,7 @@ func (h *ConfigHandler) saveHistory(config *model.AppConfig, operator, operate s
 		Type:      config.Type,
 		Operate:   operate,
 		Contents:  config.Contents,
-		CreatedAt: func() *time.Time { t := time.Now(); return &t }(),
+		CreatedAt: &createdAt,
 		CreatedBy: operator,
 	}
 	dao.Engine.Insert(&history)

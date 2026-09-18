@@ -39,7 +39,7 @@ type AppConfigHistory struct {
 	Operate        string     `xorm:"varchar(16)" json:"operate"` // update, delete, rollback
 	Contents       string     `xorm:"text" json:"contents"`
 	ActiveContents string     `xorm:"-" json:"activeContents,omitempty"`
-	CreatedAt      *time.Time `xorm:"datetime" json:"createdAt"`
+	CreatedAt      *time.Time `xorm:"datetime(3)" json:"createdAt"`
 	CreatedBy      string     `xorm:"varchar(32)" json:"createdBy"`
 }
 

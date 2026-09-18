@@ -152,7 +152,7 @@ CREATE TABLE `app_config_history` (
   `type` smallint DEFAULT NULL,
   `operate` varchar(16) DEFAULT NULL,
   `contents` text,
-  `created_at` datetime DEFAULT NULL,
+  `created_at` datetime(3) DEFAULT NULL,
   `created_by` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb3;

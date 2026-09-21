@@ -202,12 +202,7 @@ func (h *ConfigHandler) Add(c *gin.Context) {
 		}
 	}
 
-	now, err := dao.Now()
-	if err != nil {
-		logger.SugaredLogger.Errorf("[ConfigHandler.Add] get database time error: %v", err)
-		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "保存失败"})
-		return
-	}
+	now := time.Now()
 
 	config := model.AppConfig{
 		GroupId:   req.GroupId,
@@ -278,12 +273,7 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 		return
 	}
 
-	now, err := dao.Now()
-	if err != nil {
-		logger.SugaredLogger.Errorf("[ConfigHandler.Update] get database time error: %v", err)
-		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "保存失败"})
-		return
-	}
+	now := time.Now()
 
 	// save history
 	h.saveHistory(&config, userInfo.Name, "update", now)
@@ -317,12 +307,7 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	now, err := dao.Now()
-	if err != nil {
-		logger.SugaredLogger.Errorf("[ConfigHandler.Delete] get database time error: %v", err)
-		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "删除失败"})
-		return
-	}
+	now := time.Now()
 
 	// 记录删除前的配置内容
 	h.saveHistory(&config, userInfo.Name, "delete", now)
@@ -433,12 +418,7 @@ func (h *ConfigHandler) Rollback(c *gin.Context) {
 			return
 		}
 
-		now, err := dao.Now()
-		if err != nil {
-			logger.SugaredLogger.Errorf("[ConfigHandler.Rollback] get database time error: %v", err)
-			c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "回滚失败"})
-			return
-		}
+		now := time.Now()
 
 		// 记录回滚前的配置内容
 		h.saveHistory(&config, userInfo.Name, "rollback", now)

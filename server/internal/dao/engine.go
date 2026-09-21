@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"errors"
 	"kenaito-conf/server/internal/config"
 	"kenaito-conf/server/internal/model"
 	"kenaito-conf/server/internal/util"
@@ -98,26 +97,4 @@ func initSeedData() error {
 	}
 
 	return nil
-}
-
-// Now 返回数据库当前时间（毫秒精度），用于增量同步游标和 updated_at 写入。
-// 统一使用数据库时间可以避免多实例应用服务器之间的时钟偏差。
-func Now() (time.Time, error) {
-	rows, err := Engine.DB().Query("SELECT NOW(3)")
-	if err != nil {
-		return time.Time{}, err
-	}
-	defer rows.Close()
-
-	var now time.Time
-	if !rows.Next() {
-		if err := rows.Err(); err != nil {
-			return time.Time{}, err
-		}
-		return time.Time{}, errors.New("no database time result")
-	}
-	if err := rows.Scan(&now); err != nil {
-		return time.Time{}, err
-	}
-	return now, nil
 }

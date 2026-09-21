@@ -96,13 +96,8 @@ func (h *ConfigApiHandler) FetchAllConfigs(c *gin.Context) {
 		return
 	}
 
-	// 游标上界取查询前的数据库时间，保证查询期间发生的更新会在下次增量中返回
-	upperBound, err := dao.Now()
-	if err != nil {
-		logger.SugaredLogger.Errorf("[FetchAllConfigs] get database time error: %v", err)
-		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "服务暂时不可用"})
-		return
-	}
+	// 游标上界取查询前的当前时间，保证查询期间发生的更新会在下次增量中返回
+	upperBound := time.Now()
 
 	result := make(map[string]interface{})
 	var configIds []int
@@ -195,14 +190,8 @@ func (h *ConfigApiHandler) FetchChangedConfigs(c *gin.Context) {
 
 	lastUpdateTime := time.UnixMilli(req.LastTime)
 
-	// 以数据库时间为本次查询的固定上界，避免查询与游标生成之间的竞态，
-	// 同时避免多实例应用服务器的时钟偏差。
-	upperBound, err := dao.Now()
-	if err != nil {
-		logger.SugaredLogger.Errorf("[FetchChangedConfigs] get database time error: %v", err)
-		c.JSON(http.StatusInternalServerError, model.WrapperResponse{Code: 500, Msg: "服务暂时不可用"})
-		return
-	}
+	// 以当前时间为本次查询的固定上界，避免查询与游标生成之间的竞态
+	upperBound := time.Now()
 
 	result := make(map[string]string)
 	var configIds []int

@@ -22,6 +22,7 @@
     <el-card>
       <div slot="header" style="display: flex; justify-content: flex-end">
         <el-button type="primary" @click="$router.push('/config/add')">新建配置</el-button>
+        <el-button type="danger" style="margin-left: 10px" @click="$router.push('/config/recycle')">回收站</el-button>
       </div>
       <el-table :data="list" v-loading="loading" border stripe>
       <el-table-column prop="id" label="ID" width="60"></el-table-column>
@@ -70,6 +71,7 @@
             <span v-if="scope.row.operate === 'delete'" style="color: #F56C6C">删除</span>
             <span v-else-if="scope.row.operate === 'rollback'">回滚</span>
             <span v-else-if="scope.row.operate === 'update'">更新</span>
+            <span v-else-if="scope.row.operate === 'restore'">还原</span>
             <span v-else>-</span>
           </template>
         </el-table-column>

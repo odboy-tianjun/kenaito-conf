@@ -36,6 +36,11 @@ const routes = [
         component: () => import('../views/config/ConfigEdit.vue')
       },
       {
+        path: '/config/recycle',
+        name: 'RecycleBin',
+        component: () => import('../views/config/RecycleBin.vue')
+      },
+      {
         path: '/app/list',
         name: 'AppList',
         component: () => import('../views/app/AppList.vue')

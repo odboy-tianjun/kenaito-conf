@@ -38,6 +38,13 @@ export function deleteConfig(id) {
   })
 }
 
+export function restoreConfig(id) {
+  return request({
+    url: `/admin/config/restore/${id}`,
+    method: 'post'
+  })
+}
+
 export function getConfigHistory(id, params) {
   return request({
     url: `/admin/config/configHistories/${id}`,

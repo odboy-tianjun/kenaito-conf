@@ -28,6 +28,7 @@ type ConfigListRequest struct {
 	PageSize int    `form:"pageSize" binding:"required"`
 	Env      string `form:"env"`
 	AppId    *int   `form:"appId"`
+	Deleted  bool   `form:"deleted"`
 }
 
 func (h *ConfigHandler) List(c *gin.Context) {
@@ -48,7 +49,11 @@ func (h *ConfigHandler) List(c *gin.Context) {
 	}
 
 	// 构建查询条件
-	conditions := []string{"enabled = 1"}
+	enabledCond := "enabled = 1"
+	if req.Deleted {
+		enabledCond = "enabled = 0"
+	}
+	conditions := []string{enabledCond}
 	args := make([]interface{}, 0, 4)
 	if req.Env != "" {
 		conditions = append(conditions, "env = ?")
@@ -318,6 +323,37 @@ func (h *ConfigHandler) Delete(c *gin.Context) {
 	dao.Engine.ID(config.Id).Cols("enabled", "updated_by", "updated_at").Update(&config)
 
 	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0})
+}
+
+// Restore 从回收站还原配置
+func (h *ConfigHandler) Restore(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var config model.AppConfig
+	has, _ := dao.Engine.ID(id).Get(&config)
+	if !has {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 404, Msg: "配置不存在"})
+		return
+	}
+
+	userInfo := middleware.GetUserInfo(c)
+	if err := h.permService.RequirePermission(userInfo, config.GroupId, config.AppId); err != nil {
+		c.JSON(http.StatusForbidden, model.WrapperResponse{Code: 403, Msg: err.Error()})
+		return
+	}
+	if config.Enabled {
+		c.JSON(http.StatusOK, model.WrapperResponse{Code: 400, Msg: "配置未被删除"})
+		return
+	}
+
+	now := time.Now()
+	h.saveHistory(&config, userInfo.Name, "restore", now)
+
+	config.Enabled = true
+	config.UpdatedBy = userInfo.Name
+	config.UpdatedAt = &now
+	dao.Engine.ID(config.Id).Cols("enabled", "updated_by", "updated_at").Update(&config)
+
+	c.JSON(http.StatusOK, model.WrapperResponse{Code: 0, Data: true})
 }
 
 func (h *ConfigHandler) GetHistory(c *gin.Context) {

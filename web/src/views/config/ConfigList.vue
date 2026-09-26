@@ -2,6 +2,9 @@
   <div>
     <el-card style="margin-bottom: 16px">
       <el-form :inline="true" @submit.native.prevent="handleSearch">
+        <el-form-item label="关键字">
+          <el-input v-model="query.keyword" placeholder="配置名或内容" clearable style="width: 200px"></el-input>
+        </el-form-item>
         <el-form-item label="环境">
           <el-select v-model="query.env" placeholder="请选择" clearable style="width: 160px">
             <el-option v-for="p in profiles" :key="p.value" :label="p.label" :value="p.value"></el-option>
@@ -248,7 +251,7 @@ export default {
       list: [],
       loading: false,
       total: 0,
-      query: { pageNo: 1, pageSize: 20, env: '' },
+      query: { pageNo: 1, pageSize: 20, env: '', keyword: '' },
       profiles: [],
       historyVisible: false,
       historyList: [],
@@ -274,6 +277,7 @@ export default {
     },
     handleReset() {
       this.query.env = ''
+      this.query.keyword = ''
       this.query.pageNo = 1
       this.loadData()
     },
@@ -287,6 +291,9 @@ export default {
         }
         if (this.query.env) {
           params.env = this.query.env
+        }
+        if (this.query.keyword) {
+          params.keyword = this.query.keyword
         }
         const res = await getConfigList(params)
         this.list = res.data || []

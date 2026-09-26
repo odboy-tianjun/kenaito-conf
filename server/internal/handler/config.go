@@ -29,6 +29,7 @@ type ConfigListRequest struct {
 	Env      string `form:"env"`
 	AppId    *int   `form:"appId"`
 	Deleted  bool   `form:"deleted"`
+	Keyword  string `form:"keyword"`
 }
 
 func (h *ConfigHandler) List(c *gin.Context) {
@@ -58,6 +59,11 @@ func (h *ConfigHandler) List(c *gin.Context) {
 	if req.Env != "" {
 		conditions = append(conditions, "env = ?")
 		args = append(args, req.Env)
+	}
+	if req.Keyword != "" {
+		like := "%" + req.Keyword + "%"
+		conditions = append(conditions, "(name LIKE ? OR contents LIKE ?)")
+		args = append(args, like, like)
 	}
 	if req.AppId != nil {
 		if *req.AppId <= 0 {
